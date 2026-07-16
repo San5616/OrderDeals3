@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — SastaDeal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="_config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #070b14; --surface: #0d1526; --surface2: #111d35; --surface3: #162040;
+      --accent: #3b82f6; --accent-hover: #2563eb; --accent-glow: rgba(59,130,246,0.15);
+      --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
+      --pink: #ec4899; --cyan: #06b6d4;
+      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+      --border: rgba(59,130,246,0.12); --radius: 16px; --radius-sm: 10px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    a { text-decoration: none; color: inherit; }
+    .bg-pattern {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.05) 0%, transparent 50%);
+    }
+
+    .login-container {
+      position: relative; z-index: 1; width: 100%; max-width: 420px;
+    }
+    .login-brand {
+      text-align: center; margin-bottom: 30px;
+    }
+    .login-brand .icon {
+      width: 56px; height: 56px; background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin: 0 auto 14px;
+    }
+    .login-brand h1 {
+      font-size: 26px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .login-brand p { color: var(--text3); font-size: 13px; margin-top: 6px; }
+
+    /* Tabs */
+    .login-tabs {
+      display: flex; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 4px; margin-bottom: 20px; gap: 4px;
+    }
+    .login-tab {
+      flex: 1; padding: 10px 12px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; text-align: center; cursor: pointer;
+      border: none; background: transparent; color: var(--text3); transition: all 0.2s;
+    }
+    .login-tab.active {
+      background: var(--accent); color: white;
+    }
+
+    /* Form Card */
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+    }
+    .login-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .login-card .subtitle { color: var(--text3); font-size: 13px; margin-bottom: 24px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--text2);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .form-group input, .form-group select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 16px; color: var(--text);
+      font-size: 14px; font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .form-group input::placeholder { color: var(--text3); }
+
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    .btn-submit {
+      width: 100%; padding: 13px; background: var(--accent); color: white;
+      border: none; border-radius: var(--radius-sm); font-size: 14px;
+      font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 8px;
+    }
+    .btn-submit:hover { background: var(--accent-hover); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .forgot-link {
+      display: block; text-align: right; color: var(--accent); font-size: 12px;
+      font-weight: 500; margin-top: -8px; margin-bottom: 16px; cursor: pointer;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .switch-text {
+      text-align: center; font-size: 13px; color: var(--text3); margin-top: 20px;
+    }
+    .switch-text a { color: var(--accent); font-weight: 600; cursor: pointer; }
+    .switch-text a:hover { text-decoration: underline; }
+
+    .back-home {
+      text-align: center; margin-top: 20px;
+    }
+    .back-home a {
+      color: var(--text3); font-size: 13px; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .back-home a:hover { color: var(--accent); }
+
+    /* Register form */
+    .register-link { text-align: center; margin-top: 16px; }
+    .register-link a { color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 480px) {
+      .login-card { padding: 20px; }
+      .form-row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="icon">💰</div>
+      <h1>SastaDeal</h1>
+      <p>Personal Order Deal Tracker</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchTab('buyer')" id="tab-buyer">👤 Buyer</button>
+      <button class="login-tab" onclick="switchTab('mediator')" id="tab-mediator">🤝 Mediator</button>
+      <button class="login-tab" onclick="switchTab('admin')" id="tab-admin">⚡ Admin</button>
+    </div>
+
+    <!-- Buyer Login -->
+    <div class="login-card" id="buyerForm">
+      <h2>Buyer Login</h2>
+      <p class="subtitle">Login with mobile number or email</p>
+      <div id="buyerLoginView">
+        <div class="form-group">
+          <label>Mobile / Email</label>
+          <input type="text" id="buyerMobile" placeholder="Enter mobile or email">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="buyerPassword" placeholder="Enter password">
+        </div>
+        <a class="forgot-link" onclick="showForgotPassword('buyer')">Forgot password?</a>
+        <button class="btn-submit" onclick="loginBuyer()">Login →</button>
+        <div class="register-link">
+          <a onclick="showRegister()">Don't have an account? Register</a>
+        </div>
+      </div>
+      <div id="buyerRegisterView" class="hidden">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="regName" placeholder="Your full name">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mobile</label>
+            <input type="tel" id="regMobile" placeholder="10-digit mobile">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="regEmail" placeholder="Email (optional)">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="Create password">
+        </div>
+        <button class="btn-submit" onclick="registerAccount()">Create Account →</button>
+        <div class="register-link">
+          <a onclick="showLogin()">Already have an account? Login</a>
+        </div>
+      </div>
+      <div id="buyerForgotView" class="hidden">
+        <p class="subtitle">Enter your registered mobile or email to recover password</p>
+        <div class="form-group">
+          <label>Mobile / Email</label>
+          <input type="text" id="forgotInput" placeholder="Enter registered mobile or email">
+        </div>
+        <button class="btn-submit" onclick="recoverPassword()">Recover Password →</button>
+        <div class="register-link">
+          <a onclick="showLogin()">← Back to Login</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mediator Login -->
+    <div class="login-card hidden" id="mediatorForm">
+      <h2>Mediator Login</h2>
+      <p class="subtitle">Login with mobile number or email</p>
+      <div class="form-group">
+        <label>Mobile / Email</label>
+        <input type="text" id="mediatorMobile" placeholder="Enter mobile or email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="mediatorPassword" placeholder="Enter password">
+      </div>
+      <a class="forgot-link" onclick="showForgotPassword('mediator')">Forgot password?</a>
+      <button class="btn-submit" onclick="loginMediator()">Login →</button>
+      <div class="register-link">
+        <a onclick="showRegister()">Don't have an account? Register</a>
+      </div>
+    </div>
+
+    <!-- Admin Login -->
+    <div class="login-card hidden" id="adminForm">
+      <h2>Admin Login</h2>
+      <p class="subtitle">Restricted access — admin only</p>
+      <div class="form-group">
+        <label>Admin Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter admin password">
+      </div>
+      <button class="btn-submit" onclick="loginAdmin()">Login →</button>
+    </div>
+
+    <div class="back-home">
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'buyer';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('buyerForm').classList.toggle('hidden', tab !== 'buyer');
+      document.getElementById('mediatorForm').classList.toggle('hidden', tab !== 'mediator');
+      document.getElementById('adminForm').classList.toggle('hidden', tab !== 'admin');
+    }
+
+    function showRegister() {
+      document.getElementById('buyerLoginView').classList.add('hidden');
+      document.getElementById('buyerForgotView').classList.add('hidden');
+      document.getElementById('buyerRegisterView').classList.remove('hidden');
+    }
+    function showLogin() {
+      document.getElementById('buyerRegisterView').classList.add('hidden');
+      document.getElementById('buyerForgotView').classList.add('hidden');
+      document.getElementById('buyerLoginView').classList.remove('hidden');
+    }
+    function showForgotPassword(role) {
+      if (role === 'buyer') {
+        document.getElementById('buyerLoginView').classList.add('hidden');
+        document.getElementById('buyerRegisterView').classList.add('hidden');
+        document.getElementById('buyerForgotView').classList.remove('hidden');
+      }
+    }
+
+    // Admin login
+    async function loginAdmin() {
+      const password = document.getElementById('adminPassword').value.trim();
+      if (!password) { showToast('Enter admin password', 'warning'); return; }
+
+      try {
+        const result = await apiCall('adminLogin', { password });
+        if (result.success) {
+          sessionStorage.setItem(CONFIG.SESSION_ROLE, 'admin');
+          sessionStorage.setItem(CONFIG.SESSION_NAME, result.name);
+          showToast('Welcome, Admin!', 'success');
+          setTimeout(() => window.location.href = 'admin-dashboard.html', 500);
+        } else {
+          showToast(result.error || 'Invalid password', 'error');
+        }
+      } catch (e) {
+        showToast('Connection error', 'error');
+      }
+    }
+
+    // Buyer login
+    async function loginBuyer() {
+      const mobile = document.getElementById('buyerMobile').value.trim();
+      const password = document.getElementById('buyerPassword').value.trim();
+      if (!mobile) { showToast('Enter mobile or email', 'warning'); return; }
+
+      const isEmail = mobile.includes('@');
+      try {
+        const result = await apiCall('buyerLogin', {
+          mobile: isEmail ? '' : mobile,
+          email: isEmail ? mobile : '',
+          password
+        });
+        if (result.success) {
+          sessionStorage.setItem(CONFIG.SESSION_ROLE, 'buyer');
+          sessionStorage.setItem(CONFIG.SESSION_NAME, result.name);
+          sessionStorage.setItem(CONFIG.SESSION_MOBILE, result.mobile);
+          sessionStorage.setItem(CONFIG.SESSION_EMAIL, result.email);
+          sessionStorage.setItem(CONFIG.SESSION_USERID, result.userId);
+          showToast('Welcome, ' + result.name + '!', 'success');
+          setTimeout(() => window.location.href = 'buyer-dashboard.html', 500);
+        } else {
+          showToast(result.error || 'Login failed', 'error');
+        }
+      } catch (e) {
+        showToast('Connection error', 'error');
+      }
+    }
+
+    // Mediator login
+    async function loginMediator() {
+      const mobile = document.getElementById('mediatorMobile').value.trim();
+      const password = document.getElementById('mediatorPassword').value.trim();
+      if (!mobile) { showToast('Enter mobile or email', 'warning'); return; }
+
+      const isEmail = mobile.includes('@');
+      try {
+        const result = await apiCall('mediatorLogin', {
+          mobile: isEmail ? '' : mobile,
+          email: isEmail ? mobile : '',
+          password
+        });
+        if (result.success) {
+          sessionStorage.setItem(CONFIG.SESSION_ROLE, 'mediator');
+          sessionStorage.setItem(CONFIG.SESSION_NAME, result.name);
+          sessionStorage.setItem(CONFIG.SESSION_MOBILE, result.mobile);
+          sessionStorage.setItem(CONFIG.SESSION_EMAIL, result.email);
+          sessionStorage.setItem(CONFIG.SESSION_USERID, result.userId);
+          showToast('Welcome, ' + result.name + '!', 'success');
+          setTimeout(() => window.location.href = 'mediator-dashboard.html', 500);
+        } else {
+          showToast(result.error || 'Login failed', 'error');
+        }
+      } catch (e) {
+        showToast('Connection error', 'error');
+      }
+    }
+
+    // Register
+    async function registerAccount() {
+      const name = document.getElementById('regName').value.trim();
+      const mobile = document.getElementById('regMobile').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+
+      if (!name || !mobile || !password) {
+        showToast('Please fill name, mobile and password', 'warning');
+        return;
+      }
+
+      try {
+        const result = await apiCall('createAccount', { name, mobile, email, password, role: 'buyer' });
+        if (result.success) {
+          showToast('Account created! Please login.', 'success');
+          showLogin();
+        } else {
+          showToast(result.error || 'Registration failed', 'error');
+        }
+      } catch (e) {
+        showToast('Connection error', 'error');
+      }
+    }
+
+    // Forgot password
+    async function recoverPassword() {
+      const input = document.getElementById('forgotInput').value.trim();
+      if (!input) { showToast('Enter mobile or email', 'warning'); return; }
+
+      const isEmail = input.includes('@');
+      try {
+        const result = await apiCall('forgotPassword', {
+          mobile: isEmail ? '' : input,
+          email: isEmail ? input : ''
+        });
+        if (result.success) {
+          showToast(result.message || 'Password sent to your registered contact', 'success');
+        } else {
+          showToast(result.error || 'Account not found', 'error');
+        }
+      } catch (e) {
+        showToast('Connection error', 'error');
+      }
+    }
+
+    // Enter key support
+    document.getElementById('adminPassword').addEventListener('keypress', e => { if (e.key === 'Enter') loginAdmin(); });
+    document.getElementById('buyerPassword').addEventListener('keypress', e => { if (e.key === 'Enter') loginBuyer(); });
+    document.getElementById('mediatorPassword').addEventListener('keypress', e => { if (e.key === 'Enter') loginMediator(); });
+
+    // Redirect if already logged in
+    const role = sessionStorage.getItem(CONFIG.SESSION_ROLE);
+    if (role === 'admin') window.location.href = 'admin-dashboard.html';
+    else if (role === 'buyer') window.location.href = 'buyer-dashboard.html';
+    else if (role === 'mediator') window.location.href = 'mediator-dashboard.html';
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c4df00cb0b7a0a',t:'MTc4NDI0NTQyNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

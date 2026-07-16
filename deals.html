@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deals — SastaDeal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="_config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #070b14;
+      --surface: #0d1526;
+      --surface2: #111d35;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+      --cyan: #06b6d4;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --border: rgba(59, 130, 246, 0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    .bg-pattern {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.05) 0%, transparent 50%);
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(7, 11, 20, 0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); padding: 0 20px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-brand .icon {
+      width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; -webkit-text-fill-color: white;
+    }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-links a {
+      padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
+      color: var(--text2); transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); background: var(--accent-glow); }
+    .nav-links .btn-login { background: var(--accent); color: white; font-weight: 600; padding: 8px 20px; }
+    .mobile-menu-btn {
+      display: none; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer;
+    }
+
+    .main-content { position: relative; z-index: 1; padding-top: 84px; padding-bottom: 40px; max-width: 1100px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
+
+    /* Header */
+    .page-header { margin-bottom: 30px; }
+    .page-header h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .page-header p { color: var(--text3); font-size: 14px; }
+
+    /* Filters */
+    .filter-bar {
+      display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; align-items: center;
+    }
+    .filter-bar select, .filter-bar input {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 10px 14px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
+
+    /* Deals Grid */
+    .deals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .deal-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; transition: all 0.3s; position: relative;
+    }
+    .deal-card:hover {
+      border-color: rgba(59,130,246,0.3); transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(59,130,246,0.08);
+    }
+    .deal-image {
+      width: 100%; height: 180px; object-fit: cover; background: var(--surface2);
+      display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 40px;
+    }
+    .deal-image img { width: 100%; height: 100%; object-fit: cover; }
+    .deal-body { padding: 16px; }
+    .deal-platform {
+      display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+      background: rgba(59,130,246,0.1); border-radius: 20px; font-size: 10px;
+      font-weight: 600; color: var(--accent); margin-bottom: 10px; text-transform: uppercase;
+    }
+    .deal-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; line-height: 1.4; }
+    .deal-prices { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .deal-price {
+      font-size: 20px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--green);
+    }
+    .deal-price.blurred {
+      filter: blur(6px); user-select: none; pointer-events: none;
+    }
+    .deal-less {
+      background: rgba(16,185,129,0.1); color: var(--green); padding: 3px 8px;
+      border-radius: 6px; font-size: 11px; font-weight: 700;
+    }
+    .deal-instructions {
+      font-size: 12px; color: var(--text3); line-height: 1.5; margin-bottom: 14px;
+      max-height: 60px; overflow: hidden;
+    }
+    .deal-actions { display: flex; gap: 8px; }
+    .deal-btn {
+      flex: 1; padding: 10px; border-radius: var(--radius-sm); font-size: 12px;
+      font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-align: center;
+    }
+    .deal-btn-primary { background: var(--accent); color: white; }
+    .deal-btn-primary:hover { background: var(--accent-hover); }
+    .deal-btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+    .deal-btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .deal-btn-request { background: var(--green); color: white; }
+    .deal-btn-request:hover { opacity: 0.9; }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text3);
+    }
+    .empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; color: var(--text2); margin-bottom: 8px; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column; position: absolute;
+        top: 64px; left: 0; right: 0; background: rgba(7,11,20,0.98);
+        backdrop-filter: blur(20px); padding: 20px; border-bottom: 1px solid var(--border);
+      }
+      .mobile-menu-btn { display: block; }
+      .deals-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand"><span class="icon">💰</span> SastaDeal</a>
+    <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="deals.html" class="active">Deals</a>
+      <a href="track.html">Track Order</a>
+      <a href="login.html" class="btn-login" id="navLoginBtn">Login</a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h1>🔥 Today's Deals</h1>
+      <p>Best deals from Amazon, Flipkart & more platforms</p>
+    </div>
+
+    <div class="filter-bar">
+      <select id="platformFilter" onchange="filterDeals()">
+        <option value="">All Platforms</option>
+        <option value="Amazon">Amazon</option>
+        <option value="Flipkart">Flipkart</option>
+        <option value="Meesho">Meesho</option>
+        <option value="Myntra">Myntra</option>
+        <option value="Blinkit">Blinkit</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="Search deals..." oninput="filterDeals()">
+    </div>
+
+    <div class="deals-grid" id="dealsGrid">
+      <div class="empty-state">
+        <div class="emoji">📦</div>
+        <h3>Loading deals...</h3>
+        <p>Please wait</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allDeals = [];
+    const userRole = sessionStorage.getItem(CONFIG.SESSION_ROLE);
+    const isBuyer = userRole === 'buyer';
+
+    function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
+
+    async function loadDeals() {
+      try {
+        const result = await apiCall('getDeals', { admin: userRole === 'admin' });
+        if (result.success) {
+          allDeals = result.deals || [];
+          renderDeals(allDeals);
+        }
+      } catch (e) {
+        renderDeals([]);
+      }
+    }
+
+    function renderDeals(deals) {
+      const grid = document.getElementById('dealsGrid');
+      if (!deals.length) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="emoji">🔍</div>
+            <h3>No deals found</h3>
+            <p>Check back later for new deals!</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = deals.map(deal => `
+        <div class="deal-card">
+          <div class="deal-image">
+            ${deal.imageUrl ? `<img src="${deal.imageUrl}" alt="${deal.title}" onerror="this.parentElement.innerHTML='📦'">` : '📦'}
+          </div>
+          <div class="deal-body">
+            <span class="deal-platform">${deal.platform || 'Deal'}</span>
+            <h3 class="deal-title">${deal.title || 'Untitled Deal'}</h3>
+            <div class="deal-prices">
+              <span class="deal-price ${!isBuyer ? 'blurred' : ''}">₹${deal.price || 0}</span>
+              ${deal.lessAmount ? `<span class="deal-less">Save ₹${deal.lessAmount}</span>` : ''}
+            </div>
+            ${deal.instructions ? `<p class="deal-instructions">${deal.instructions}</p>` : ''}
+            <div class="deal-actions">
+              ${deal.productUrl ? `<a href="${deal.productUrl}" target="_blank" class="deal-btn deal-btn-primary">View Deal</a>` : ''}
+              ${isBuyer ? `<button class="deal-btn deal-btn-request" onclick="requestDeal('${deal.dealId}','${deal.title.replace(/'/g, '')}')">Request Deal</button>` : ''}
+              ${!isBuyer ? `<button class="deal-btn deal-btn-outline" onclick="window.location.href='login.html'">Login to Request</button>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterDeals() {
+      const platform = document.getElementById('platformFilter').value;
+      const search = document.getElementById('searchInput').value.toLowerCase();
+
+      let filtered = allDeals;
+      if (platform) filtered = filtered.filter(d => d.platform === platform);
+      if (search) filtered = filtered.filter(d =>
+        (d.title || '').toLowerCase().includes(search) ||
+        (d.platform || '').toLowerCase().includes(search) ||
+        (d.instructions || '').toLowerCase().includes(search)
+      );
+
+      renderDeals(filtered);
+    }
+
+    async function requestDeal(dealId, dealTitle) {
+      const userName = sessionStorage.getItem(CONFIG.SESSION_NAME) || 'Buyer';
+      const userMobile = sessionStorage.getItem(CONFIG.SESSION_MOBILE) || '';
+
+      try {
+        // Server handles sending — admin number is hidden on server
+        await apiCall('requestDeal', {
+          buyerName: userName,
+          buyerMobile: userMobile,
+          dealTitle: dealTitle,
+          dealId: dealId
+        });
+        showToast('Deal request sent to admin!', 'success');
+      } catch (e) {
+        showToast('Request sent! Admin will contact you.', 'success');
+      }
+    }
+
+    // Update nav based on login
+    function checkSession() {
+      const btn = document.getElementById('navLoginBtn');
+      if (sessionStorage.getItem(CONFIG.SESSION_ROLE) === 'admin') {
+        btn.textContent = 'Admin Panel';
+        btn.href = 'admin-dashboard.html';
+      } else if (sessionStorage.getItem(CONFIG.SESSION_ROLE) === 'buyer') {
+        btn.textContent = 'My Dashboard';
+        btn.href = 'buyer-dashboard.html';
+      } else if (sessionStorage.getItem(CONFIG.SESSION_ROLE) === 'mediator') {
+        btn.textContent = 'Mediator Panel';
+        btn.href = 'mediator-dashboard.html';
+      }
+    }
+
+    checkSession();
+    loadDeals();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c4dec0797f7a0a',t:'MTc4NDI0NTQxNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

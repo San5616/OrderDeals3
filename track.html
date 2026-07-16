@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order — SastaDeal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="_config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #070b14; --surface: #0d1526; --surface2: #111d35;
+      --accent: #3b82f6; --accent-hover: #2563eb; --accent-glow: rgba(59,130,246,0.15);
+      --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
+      --pink: #ec4899; --cyan: #06b6d4; --orange: #f97316;
+      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+      --border: rgba(59,130,246,0.12); --radius: 16px; --radius-sm: 10px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    .bg-pattern {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.05) 0%, transparent 50%);
+    }
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(7,11,20,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); padding: 0 20px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-brand .icon {
+      width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; -webkit-text-fill-color: white;
+    }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-links a {
+      padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
+      color: var(--text2); transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); background: var(--accent-glow); }
+    .nav-links .btn-login { background: var(--accent); color: white; font-weight: 600; padding: 8px 20px; }
+    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; }
+
+    .main-content { position: relative; z-index: 1; padding-top: 84px; padding-bottom: 40px; max-width: 700px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
+
+    .page-header { margin-bottom: 30px; text-align: center; }
+    .page-header h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .page-header p { color: var(--text3); font-size: 14px; }
+
+    /* Track Input */
+    .track-search {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; margin-bottom: 30px;
+    }
+    .track-search h3 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+    .track-input-group { display: flex; gap: 10px; }
+    .track-input-group input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px 16px; color: var(--text); font-size: 14px; font-family: 'JetBrains Mono', monospace;
+      outline: none; transition: border-color 0.2s;
+    }
+    .track-input-group input:focus { border-color: var(--accent); }
+    .track-input-group button {
+      background: var(--accent); color: white; border: none; border-radius: var(--radius-sm);
+      padding: 12px 24px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+    }
+    .track-input-group button:hover { background: var(--accent-hover); }
+
+    /* Order Info Card */
+    .order-info {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; margin-bottom: 24px;
+    }
+    .order-info-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .order-info-header h3 { font-size: 16px; font-weight: 700; }
+    .info-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .info-item { padding: 10px; background: var(--bg); border-radius: var(--radius-sm); }
+    .info-item label { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 4px; }
+    .info-item span { font-size: 14px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+    /* Timeline */
+    .timeline-container {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px; margin-bottom: 24px;
+    }
+    .timeline-container h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .timeline { position: relative; padding-left: 36px; }
+    .timeline::before {
+      content: ''; position: absolute; left: 14px; top: 0; bottom: 0;
+      width: 2px; background: var(--border);
+    }
+    .timeline-step {
+      position: relative; padding-bottom: 28px;
+    }
+    .timeline-step:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute; left: -29px; top: 2px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--surface2); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; transition: all 0.3s;
+    }
+    .timeline-step.completed .timeline-dot {
+      background: var(--green); border-color: var(--green);
+    }
+    .timeline-step.active .timeline-dot {
+      background: var(--accent); border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(59,130,246,0.4);
+    }
+    .timeline-step .step-title {
+      font-size: 14px; font-weight: 600; margin-bottom: 4px;
+      color: var(--text3);
+    }
+    .timeline-step.completed .step-title,
+    .timeline-step.active .step-title { color: var(--text); }
+    .timeline-step .step-date {
+      font-size: 12px; color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .timeline-step .step-days {
+      display: inline-block; margin-top: 4px; padding: 2px 8px;
+      background: rgba(245,158,11,0.1); border-radius: 10px;
+      font-size: 10px; font-weight: 600; color: var(--yellow);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .timeline-step .step-days.fast {
+      background: rgba(16,185,129,0.1); color: var(--green);
+    }
+
+    /* Payment Info */
+    .payment-section {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; margin-bottom: 24px;
+    }
+    .payment-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+
+    /* Loading & Error */
+    .loading { text-align: center; padding: 40px; color: var(--text3); }
+    .loading .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--radius); padding: 20px; text-align: center; color: var(--red);
+    }
+    .hidden { display: none !important; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column; position: absolute;
+        top: 64px; left: 0; right: 0; background: rgba(7,11,20,0.98);
+        backdrop-filter: blur(20px); padding: 20px; border-bottom: 1px solid var(--border);
+      }
+      .mobile-menu-btn { display: block; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand"><span class="icon">💰</span> SastaDeal</a>
+    <button class="mobile-menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="deals.html">Deals</a>
+      <a href="track.html" class="active">Track Order</a>
+      <a href="login.html" class="btn-login" id="navLoginBtn">Login</a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h1>📦 Track Your Order</h1>
+      <p>Enter your Platform Order ID to see real-time status</p>
+    </div>
+
+    <div class="track-search">
+      <h3>🔍 Search Order</h3>
+      <div class="track-input-group">
+        <input type="text" id="trackInput" placeholder="Enter Platform Order ID or Order No...">
+        <button onclick="searchOrder()">Track</button>
+      </div>
+    </div>
+
+    <div id="resultArea"></div>
+  </div>
+
+  <script>
+    function toggleMenu() { document.getElementById('navLinks').classList.toggle('open'); }
+
+    // Check URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderIdFromUrl = urlParams.get('id');
+    if (orderIdFromUrl) {
+      document.getElementById('trackInput').value = orderIdFromUrl;
+      searchOrder();
+    }
+
+    // Enter key
+    document.getElementById('trackInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') searchOrder();
+    });
+
+    async function searchOrder() {
+      const orderId = document.getElementById('trackInput').value.trim();
+      if (!orderId) { showToast('Please enter an Order ID', 'warning'); return; }
+
+      const area = document.getElementById('resultArea');
+      area.innerHTML = `<div class="loading"><div class="spinner"></div><p>Searching for order...</p></div>`;
+
+      try {
+        const result = await apiCall('trackOrder', { platformOrderId: orderId });
+        if (result.success) {
+          renderTracking(result.tracking);
+        } else {
+          area.innerHTML = `<div class="error-box"><p>❌ ${result.error || 'Order not found'}</p></div>`;
+        }
+      } catch (e) {
+        area.innerHTML = `<div class="error-box"><p>❌ Network error. Please try again.</p></div>`;
+      }
+    }
+
+    function renderTracking(t) {
+      const area = document.getElementById('resultArea');
+      const today = new Date();
+
+      const steps = [
+        { label: 'Order Placed', date: t.OrderDate, statusIdx: 0 },
+        { label: 'Product Received', date: t.DeliveryDate, statusIdx: 1 },
+        { label: 'Reviewed', date: t.ReviewDate, statusIdx: 2 },
+        { label: 'Review Live', date: t.ReviewLiveDate, statusIdx: 3 },
+        { label: 'Refund Form Filled', date: t.RefundFormDate, statusIdx: 4 },
+        { label: 'Got Refund', date: t.RefundDate, statusIdx: 5 }
+      ];
+
+      const currentStatus = t.OrderStatus || '';
+      const statusOrder = ['Order Placed', 'Product Received', 'Reviewed', 'Review Live', 'Refund form filled', 'Got Refund'];
+      const currentIdx = statusOrder.indexOf(currentStatus);
+
+      let timelineHtml = '';
+      steps.forEach((step, idx) => {
+        let cls = '';
+        if (idx < currentIdx || (idx === currentIdx && currentStatus !== '')) cls = 'completed';
+        else if (idx === currentIdx) cls = 'active';
+
+        let daysInfo = '';
+        if (step.date && idx > 0) {
+          const prevDate = steps[idx - 1].date;
+          if (prevDate) {
+            const days = daysBetween(prevDate, step.date);
+            if (days !== null) {
+              const fastClass = days <= 3 ? 'fast' : '';
+              daysInfo = `<div class="step-days ${fastClass}">${days} days</div>`;
+            }
+          }
+        }
+        // Show days since RefundFormDate if no refund yet
+        if (idx === 5 && !step.date && steps[4].date) {
+          const days = daysBetween(steps[4].date, today);
+          if (days !== null) {
+            daysInfo = `<div class="step-days">${days} days since form filled</div>`;
+          }
+        }
+
+        timelineHtml += `
+          <div class="timeline-step ${cls}">
+            <div class="timeline-dot">${cls === 'completed' ? '✓' : ''}</div>
+            <div class="step-title">${step.label}</div>
+            <div class="step-date">${step.date ? formatDate(step.date) : '—'}</div>
+            ${daysInfo}
+          </div>
+        `;
+      });
+
+      // Payment status
+      const paymentHtml = `
+        <div class="payment-section">
+          <h3>💳 Payment Status</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Status</label>
+              <span>${t.PaymentStatus || 'Pending'}</span>
+            </div>
+            <div class="info-item">
+              <label>Payment Date</label>
+              <span>${t.PaymentDate ? formatDate(t.PaymentDate) : '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Method</label>
+              <span>${t.PaymentMethod || '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Amount</label>
+              <span>₹${t.BuyerActualGot || t.ActualGot || 0}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Refund days calculation
+      let refundDaysHtml = '';
+      if (t.RefundFormDate && t.RefundDate) {
+        const days = daysBetween(t.RefundFormDate, t.RefundDate);
+        refundDaysHtml = `
+          <div class="info-item" style="grid-column:1/-1;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);">
+            <label>🎉 Refund Timeline</label>
+            <span style="color:var(--green);font-size:16px;">${days} days from form to refund</span>
+          </div>
+        `;
+      } else if (t.RefundFormDate && !t.RefundDate) {
+        const days = daysBetween(t.RefundFormDate, today);
+        refundDaysHtml = `
+          <div class="info-item" style="grid-column:1/-1;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);">
+            <label>⏳ Waiting for Refund</label>
+            <span style="color:var(--yellow);font-size:16px;">${days} days since refund form filled</span>
+          </div>
+        `;
+      }
+
+      area.innerHTML = `
+        <div class="order-info">
+          <div class="order-info-header">
+            <h3>📋 Order Details</h3>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);font-weight:600;">#${t.OrderNo || ''}</span>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Platform</label>
+              <span>${t.OrderedPlatform || '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Account</label>
+              <span>${t.AccountName || '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Product</label>
+              <span>${t.ProductName || '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Platform Order ID</label>
+              <span style="font-size:12px;">${t.PlatformOrderID || '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Price Paid</label>
+              <span>₹${t.PricePaid || 0}</span>
+            </div>
+            <div class="info-item">
+              <label>Order Date</label>
+              <span>${t.OrderDate ? formatDate(t.OrderDate) : '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Review Link</label>
+              <span>${t.ReviewLink ? `<a href="${t.ReviewLink}" target="_blank" style="color:var(--accent);">View</a>` : '—'}</span>
+            </div>
+            <div class="info-item">
+              <label>Mediator</label>
+              <span>${t.MediatorName || '—'}</span>
+            </div>
+            ${refundDaysHtml}
+          </div>
+        </div>
+
+        <div class="timeline-container">
+          <h3>📊 Order Timeline</h3>
+          <div class="timeline">${timelineHtml}</div>
+        </div>
+
+        ${paymentHtml}
+      `;
+    }
+
+    function checkSession() {
+      const btn = document.getElementById('navLoginBtn');
+      const role = sessionStorage.getItem(CONFIG.SESSION_ROLE);
+      if (role === 'admin') { btn.textContent = 'Admin Panel'; btn.href = 'admin-dashboard.html'; }
+      else if (role === 'buyer') { btn.textContent = 'My Dashboard'; btn.href = 'buyer-dashboard.html'; }
+      else if (role === 'mediator') { btn.textContent = 'Mediator Panel'; btn.href = 'mediator-dashboard.html'; }
+    }
+    checkSession();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c4dfaeaf3f7a0a',t:'MTc4NDI0NTQ1NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

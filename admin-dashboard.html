@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — SastaDeal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="_config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #070b14; --surface: #0d1526; --surface2: #111d35; --surface3: #162040;
+      --accent: #3b82f6; --accent-hover: #2563eb; --accent-glow: rgba(59,130,246,0.15);
+      --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
+      --pink: #ec4899; --cyan: #06b6d4; --orange: #f97316;
+      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+      --border: rgba(59,130,246,0.12); --radius: 16px; --radius-sm: 10px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(7,11,20,0.92); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); padding: 0 20px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-brand .icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; -webkit-text-fill-color: white; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .btn-logout {
+      padding: 7px 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; color: var(--red); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+
+    .main-content { padding-top: 84px; padding-bottom: 40px; max-width: 1200px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+
+    /* Admin Tabs */
+    .admin-tabs {
+      display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 4px; margin-bottom: 20px; overflow-x: auto;
+    }
+    .admin-tab {
+      padding: 9px 16px; border-radius: var(--radius-sm); font-size: 12px;
+      font-weight: 600; white-space: nowrap; cursor: pointer; border: none;
+      background: transparent; color: var(--text3); transition: all 0.2s;
+    }
+    .admin-tab.active { background: var(--accent); color: white; }
+
+    /* Stats row */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px; margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px; text-align: center;
+    }
+    .stat-box .val { font-size: 20px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+    .stat-box .lbl { font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 3px; }
+
+    /* Cards */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Form */
+    .form-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 13px; color: var(--text);
+      font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group .hint { font-size: 10px; color: var(--text3); margin-top: 3px; }
+    .form-group input[readonly] { opacity: 0.6; cursor: not-allowed; }
+
+    .btn {
+      padding: 10px 20px; border: none; border-radius: var(--radius-sm); font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-success { background: var(--green); color: white; }
+    .btn-warning { background: var(--yellow); color: #000; }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 7px 14px; font-size: 11px; }
+
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+    /* Table */
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { background: var(--surface2); padding: 10px 12px; text-align: left; font-weight: 600; color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tr:hover td { background: rgba(59,130,246,0.03); }
+
+    /* Search/Filter bar */
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;
+    }
+    .search-bar input, .search-bar select {
+      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 9px 13px; color: var(--text); font-size: 13px; outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .search-bar input { min-width: 200px; }
+    .search-bar input:focus, .search-bar select:focus { border-color: var(--accent); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; width: 100%; max-width: 500px;
+      max-height: 80vh; overflow-y: auto;
+    }
+    .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .modal-close {
+      float: right; background: none; border: none; color: var(--text3);
+      font-size: 20px; cursor: pointer; margin-top: -8px;
+    }
+
+    /* Calendar popup */
+    .date-input-wrapper { position: relative; }
+
+    .hidden { display: none !important; }
+    .empty-state { text-align: center; padding: 30px; color: var(--text3); }
+
+    /* Badge */
+    .days-badge {
+      display: inline-block; padding: 2px 7px; border-radius: 8px;
+      font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .admin-tabs { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand"><span class="icon">⚡</span> SastaDeal Admin</a>
+    <div class="nav-right">
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <!-- Admin Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('orders')" id="tab-orders">📦 Orders</button>
+      <button class="admin-tab" onclick="switchTab('addorder')" id="tab-addorder">➕ Add Order</button>
+      <button class="admin-tab" onclick="switchTab('whatsapp')" id="tab-whatsapp">📲 WhatsApp</button>
+      <button class="admin-tab" onclick="switchTab('email')" id="tab-email">📧 Email</button>
+      <button class="admin-tab" onclick="switchTab('mediators')" id="tab-mediators">🤝 Mediators</button>
+      <button class="admin-tab" onclick="switchTab('buyers')" id="tab-buyers">👥 Buyers</button>
+      <button class="admin-tab" onclick="switchTab('settings')" id="tab-settings">⚙️ Settings</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="adminStats"></div>
+
+    <!-- ORDERS TAB -->
+    <div id="ordersSection">
+      <div class="card">
+        <h3>📦 All Orders</h3>
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="🔍 Search orders..." oninput="searchOrders()">
+          <select id="statusFilter" onchange="searchOrders()">
+            <option value="">All Status</option>
+            <option value="Order Placed">Order Placed</option>
+            <option value="Product Received">Product Received</option>
+            <option value="Reviewed">Reviewed</option>
+            <option value="Review Live">Review Live</option>
+            <option value="Refund form filled">Refund Form Filled</option>
+            <option value="Got Refund">Got Refund</option>
+          </select>
+          <select id="paymentFilterAdmin" onchange="searchOrders()">
+            <option value="all">All Payments</option>
+            <option value="pending" selected>Pending (excl. Refunded)</option>
+            <option value="Pending payment">Pending Payment Only</option>
+            <option value="Paid">Paid Only</option>
+          </select>
+          <input type="date" id="dateFrom" onchange="searchOrders()">
+          <input type="date" id="dateTo" onchange="searchOrders()">
+          <button class="btn btn-outline btn-sm" onclick="resetFilters()">Reset</button>
+        </div>
+        <div class="table-wrapper">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>#</th><th>Platform</th><th>Product</th><th>Order ID</th>
+                <th>Price</th><th>Less</th><th>Status</th><th>Payment</th>
+                <th>Days</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+        </div>
+        <div id="ordersEmpty" class="empty-state hidden">
+          <p>No orders found</p>
+        </div>
+      </div>
+
+      <!-- Recent Payments -->
+      <div class="card">
+        <h3>💰 Recent Payments</h3>
+        <div class="search-bar">
+          <input type="date" id="payDateFrom" onchange="searchPayments()">
+          <input type="date" id="payDateTo" onchange="searchPayments()">
+          <input type="number" id="payAmount" placeholder="Search by amount..." onchange="searchPayments()" style="width:150px;">
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>#</th><th>Product</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead>
+            <tbody id="paymentsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD ORDER TAB -->
+    <div id="addorderSection" class="hidden">
+      <div class="card">
+        <h3>➕ Add New Order</h3>
+        <div style="margin-bottom:16px;padding:12px;background:var(--bg);border-radius:var(--radius-sm);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <label style="font-size:12px;font-weight:600;color:var(--text2);">Platform Order ID:</label>
+          <input type="text" id="fetchPlatformId" placeholder="Enter to check if exists..." style="flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;">
+          <button class="btn btn-outline btn-sm" onclick="fetchExistingOrder()">🔍 Fetch Details</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Order No</label>
+            <input type="text" id="admOrderNo" readonly placeholder="Auto">
+          </div>
+          <div class="form-group">
+            <label>Platform *</label>
+            <select id="admPlatform"><option value="">Select</option></select>
+          </div>
+          <div class="form-group">
+            <label>Parent User ID</label>
+            <select id="admParentUser" onchange="onParentChange()"><option value="">Select</option></select>
+          </div>
+          <div class="form-group">
+            <label>Account Name *</label>
+            <select id="admAccount" onchange="onAccountChange()"><option value="">Select Parent first</option></select>
+          </div>
+          <div class="form-group">
+            <label>User ID (auto)</label>
+            <input type="text" id="admUserId" readonly placeholder="Auto-filled">
+          </div>
+          <div class="form-group">
+            <label>Mediator Name</label>
+            <select id="admMediator"><option value="">Select</option></select>
+          </div>
+          <div class="form-group">
+            <label>Deal Contact No</label>
+            <select id="admContact"><option value="">Select</option></select>
+          </div>
+          <div class="form-group">
+            <label>For Whom *</label>
+            <select id="admForWhom">
+              <option value="Self">Self</option>
+              <option value="Buyer">Buyer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Product Name *</label>
+            <input type="text" id="admProduct" placeholder="Product name">
+          </div>
+          <div class="form-group">
+            <label>Seller Name</label>
+            <input type="text" id="admSeller" placeholder="Seller name">
+          </div>
+          <div class="form-group">
+            <label>Product Link</label>
+            <input type="url" id="admLink" placeholder="Product URL">
+          </div>
+          <div class="form-group">
+            <label>Platform Order ID *</label>
+            <input type="text" id="admPlatformId" placeholder="Amazon/Flipkart order ID">
+          </div>
+          <div class="form-group">
+            <label>Price Paid (₹) *</label>
+            <input type="number" id="admPrice" placeholder="0" oninput="calcToGet()">
+          </div>
+          <div class="form-group">
+            <label>Less (₹)</label>
+            <input type="number" id="admLess" placeholder="0" oninput="calcToGet()">
+          </div>
+          <div class="form-group">
+            <label>To Get (auto)</label>
+            <input type="number" id="admToGet" readonly placeholder="= Less">
+          </div>
+          <div class="form-group">
+            <label>Buyer Less (₹)</label>
+            <input type="number" id="admBuyerLess" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Order Date *</label>
+            <input type="date" id="admDate">
+          </div>
+          <div class="form-group">
+            <label>Mediator Order Form (link)</label>
+            <input type="url" id="admMedForm" placeholder="URL">
+          </div>
+          <div class="form-group">
+            <label>Mediator Refund Form (link)</label>
+            <input type="url" id="admRefundForm" placeholder="URL">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="admNotes" placeholder="Any notes..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Order Screenshot</label>
+          <input type="file" id="admScreenshot" accept="image/*" onchange="previewAdminImage(this)">
+          <div id="adminImgPreview" style="margin-top:8px;"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="submitAdminOrder()">💾 Submit Order</button>
+          <button class="btn btn-outline" onclick="clearAdminForm()">Clear Form</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHATSAPP TAB -->
+    <div id="whatsappSection" class="hidden">
+      <div class="card">
+        <h3>📲 Send WhatsApp Message</h3>
+        <div class="form-group">
+          <label>To (Phone number with country code)</label>
+          <input type="text" id="waNumber" placeholder="91XXXXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Auto-fill from Order (optional)</label>
+          <select id="waOrderSelect" onchange="fillWAOrder()">
+            <option value="">-- Select order to auto-fill --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="waMessage" rows="6" placeholder="Type your message..."></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-success" onclick="sendWA()">📲 Send WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAIL TAB -->
+    <div id="emailSection" class="hidden">
+      <div class="card">
+        <h3>📧 Send Email</h3>
+        <div class="form-group">
+          <label>To (Email)</label>
+          <input type="email" id="emailTo" placeholder="buyer@email.com">
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <input type="text" id="emailSubject" placeholder="Email subject">
+        </div>
+        <div class="form-group">
+          <label>Auto-fill from Order (optional)</label>
+          <select id="emailOrderSelect" onchange="fillEmailOrder()">
+            <option value="">-- Select order --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea id="emailBody" rows="6" placeholder="Email body..."></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="sendEmailManual()">📧 Send Email</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIATORS TAB -->
+    <div id="mediatorsSection" class="hidden">
+      <div class="card">
+        <h3>🤝 Add Mediator</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="medName" placeholder="Mediator name">
+          </div>
+          <div class="form-group">
+            <label>Contact</label>
+            <input type="text" id="medContact" placeholder="Phone number">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp</label>
+            <input type="text" id="medWhatsapp" placeholder="WhatsApp number">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addMediator()">Add Mediator</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📋 All Mediators</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Name</th><th>Contact</th><th>WhatsApp</th></tr></thead>
+            <tbody id="mediatorsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUYERS TAB -->
+    <div id="buyersSection" class="hidden">
+      <div class="card">
+        <h3>👥 Add Buyer</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="buyerName" placeholder="Buyer name">
+          </div>
+          <div class="form-group">
+            <label>Mobile</label>
+            <input type="text" id="buyerMobile" placeholder="10-digit mobile">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="buyerEmail" placeholder="Email (optional)">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="text" id="buyerPassword" placeholder="Login password">
+          </div>
+          <div class="form-group">
+            <label>Parent User ID</label>
+            <select id="buyerParent"><option value="">None</option></select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addBuyerAccount()">Add Buyer</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📋 All Buyers</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>User ID</th><th>Name</th><th>Mobile</th><th>Email</th><th>Parent</th></tr></thead>
+            <tbody id="buyersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="settingsSection" class="hidden">
+      <div class="card">
+        <h3>⚙️ Admin Settings</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Admin WhatsApp Number</label>
+            <input type="text" id="settingsWA" placeholder="917004984949" value="917004984949">
+          </div>
+          <div class="form-group">
+            <label>Admin Email</label>
+            <input type="email" id="settingsEmail" placeholder="admin@email.com">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🔄 Refresh Data</h3>
+        <p style="font-size:13px;color:var(--text3);margin-bottom:14px;">Reload dropdowns and data from Google Sheet</p>
+        <button class="btn btn-outline" onclick="refreshDropdowns()">🔄 Refresh Dropdowns</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Status Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <h3 id="modalTitle">Edit Order Status</h3>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    if (!isLoggedIn() || !isAdmin()) window.location.href = 'login.html';
+
+    let allOrders = [];
+    let dropdownData = {};
+    let currentEditOrder = null;
+
+    function switchTab(tab) {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      ['orders', 'addorder', 'whatsapp', 'email', 'mediators', 'buyers', 'settings'].forEach(s => {
+        const el = document.getElementById(s + 'Section');
+        if (el) el.classList.toggle('hidden', s !== tab);
+      });
+      if (tab === 'addorder') loadNextOrderNo();
+      if (tab === 'whatsapp' || tab === 'email') populateOrderSelects();
+    }
+
+    async function init() {
+      await refreshDropdowns();
+      loadStats();
+      loadAllOrders();
+      loadMediators();
+      loadBuyers();
+      loadNextOrderNo();
+    }
+
+    async function refreshDropdowns() {
+      try {
+        const dd = await apiCall('getDropdowns');
+        if (dd.success) dropdownData = dd;
+        populateAdminForm();
+      } catch (e) {}
+    }
+
+    function populateAdminForm() {
+      // Platforms
+      const platSel = document.getElementById('admPlatform');
+      platSel.innerHTML = '<option value="">Select Platform</option>' +
+        (dropdownData.platforms || []).map(p => `<option value="${p}">${p}</option>`).join('');
+
+      // Mediators
+      const medSel = document.getElementById('admMediator');
+      medSel.innerHTML = '<option value="">Select Mediator</option>' +
+        (dropdownData.mediators || []).map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+
+      // Contact numbers
+      const contactSel = document.getElementById('admContact');
+      contactSel.innerHTML = '<option value="">Select</option>' +
+        (dropdownData.contactNos || []).map(c => `<option value="${c}">${c}</option>`).join('');
+
+      // Parent users (unique)
+      const parentSel = document.getElementById('admParentUser');
+      const parents = [...new Set((dropdownData.accounts || []).map(a => a.parentId).filter(p => p))];
+      parentSel.innerHTML = '<option value="">Select Parent</option>' +
+        parents.map(p => `<option value="${p}">${p}</option>`).join('');
+
+      // Buyer parent dropdown
+      const buyerParentSel = document.getElementById('buyerParent');
+      buyerParentSel.innerHTML = '<option value="">None</option>' +
+        parents.map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    function onParentChange() {
+      const parentId = document.getElementById('admParentUser').value;
+      const accountSel = document.getElementById('admAccount');
+      if (!parentId) {
+        accountSel.innerHTML = '<option value="">Select Parent first</option>';
+        return;
+      }
+      const filtered = (dropdownData.accounts || []).filter(a => a.parentId === parentId);
+      accountSel.innerHTML = '<option value="">Select Account</option>' +
+        filtered.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+    }
+
+    function onAccountChange() {
+      const accountName = document.getElementById('admAccount').value;
+      if (!accountName) { document.getElementById('admUserId').value = ''; return; }
+      const found = (dropdownData.accounts || []).find(a => a.name === accountName);
+      if (found) document.getElementById('admUserId').value = found.userId || '';
+    }
+
+    function calcToGet() {
+      const less = parseFloat(document.getElementById('admLess').value) || 0;
+      document.getElementById('admToGet').value = less;
+    }
+
+    async function loadNextOrderNo() {
+      try {
+        const r = await apiCall('getNextOrderNo');
+        if (r.success) document.getElementById('admOrderNo').value = r.nextOrderNo;
+      } catch (e) {}
+    }
+
+    async function loadStats() {
+      try {
+        const r = await apiCall('getDashboardStats');
+        if (r.success) {
+          const s = r.stats;
+          document.getElementById('adminStats').innerHTML = `
+            <div class="stat-box"><div class="val" style="color:var(--accent);">${s.totalOrders}</div><div class="lbl">Total</div></div>
+            <div class="stat-box"><div class="val" style="color:var(--yellow);">${s.pendingOrders}</div><div class="lbl">Pending</div></div>
+            <div class="stat-box"><div class="val" style="color:var(--green);">${s.completedOrders}</div><div class="lbl">Refunded</div></div>
+            <div class="stat-box"><div class="val" style="color:var(--purple);">₹${s.totalRefund.toLocaleString('en-IN')}</div><div class="lbl">Total Refund</div></div>
+            <div class="stat-box"><div class="val" style="color:var(--orange);">${s.pendingPayment}</div><div class="lbl">Pay Pending</div></div>
+            <div class="stat-box"><div class="val" style="color:var(--cyan);">${s.todayOrders}</div><div class="lbl">Today</div></div>
+          `;
+        }
+      } catch (e) {}
+    }
+
+    async function loadAllOrders() {
+      try {
+        const r = await apiCall('getOrders');
+        if (r.success) {
+          // Get tracking data too
+          const orders = r.orders || [];
+          // Load tracking for each order
+          allOrders = orders.map(o => {
+            o._display = true;
+            return o;
+          });
+          // Load tracking data
+          const trackingResult = await apiCall('searchOrders', { filter: 'all', paymentFilter: 'all' });
+          if (trackingResult.success) {
+            allOrders = trackingResult.orders || [];
+          }
+          renderOrders(allOrders);
+        }
+      } catch (e) {}
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('ordersBody');
+      const today = new Date();
+
+      if (!orders.length) {
+        tbody.innerHTML = '';
+        document.getElementById('ordersEmpty').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('ordersEmpty').classList.add('hidden');
+
+      tbody.innerHTML = orders.map(o => {
+        const t = o.tracking || {};
+        let daysHtml = '';
+        // Days since RefundFormDate
+        if (t.RefundFormDate && !t.RefundDate) {
+          const days = daysBetween(t.RefundFormDate, today);
+          if (days !== null) daysHtml = `<span class="days-badge" style="background:rgba(245,158,11,0.1);color:var(--yellow);">${days}d</span>`;
+        } else if (t.RefundFormDate && t.RefundDate) {
+          const days = daysBetween(t.RefundFormDate, t.RefundDate);
+          if (days !== null) daysHtml = `<span class="days-badge" style="background:rgba(16,185,129,0.1);color:var(--green);">${days}d ✓</span>`;
+        }
+
+        return `
+          <tr>
+            <td style="font-weight:600;color:var(--accent);">${o.OrderNo || t.OrderNo || ''}</td>
+            <td>${t.OrderedPlatform || o.OrderedPlatform || ''}</td>
+            <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;">${t.ProductName || o.ProductName || ''}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${t.PlatformOrderID || o.PlatformOrderID || ''}</td>
+            <td>₹${t.PricePaid || o.PricePaid || 0}</td>
+            <td>₹${o.BuyerLess || o.Less || 0}</td>
+            <td>${statusBadge(t.OrderStatus || 'Order Placed')}</td>
+            <td>${paymentBadge(t.PaymentStatus || 'Pending payment')}</td>
+            <td>${daysHtml || '—'}</td>
+            <td>
+              <button class="btn btn-outline btn-sm" onclick="editOrderStatus(${o.OrderNo || t.OrderNo})" style="margin-right:4px;">✏️</button>
+              <button class="btn btn-outline btn-sm" onclick="editPayment(${o.OrderNo || t.OrderNo})">💰</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function searchOrders() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+      const payment = document.getElementById('paymentFilterAdmin').value;
+
+      let filtered = allOrders;
+      if (query) {
+        filtered = filtered.filter(o => JSON.stringify(o).toLowerCase().includes(query));
+      }
+      if (status) {
+        filtered = filtered.filter(o => (o.tracking && o.tracking.OrderStatus === status) || o.OrderStatus === status);
+      }
+      if (payment === 'pending') {
+        // Exclude refunded
+        filtered = filtered.filter(o => {
+          const os = o.tracking ? o.tracking.OrderStatus : '';
+          return os !== 'Got Refund';
+        });
+      } else if (payment === 'Pending payment') {
+        filtered = filtered.filter(o => o.tracking && o.tracking.PaymentStatus === 'Pending payment');
+      } else if (payment === 'Paid') {
+        filtered = filtered.filter(o => o.tracking && o.tracking.PaymentStatus === 'Paid');
+      }
+      renderOrders(filtered);
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('paymentFilterAdmin').value = 'pending';
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      searchOrders();
+    }
+
+    function editOrderStatus(orderNo) {
+      currentEditOrder = orderNo;
+      const statuses = ['Order Placed', 'Product Received', 'Reviewed', 'Review Live', 'Refund form filled', 'Got Refund'];
+      const today = new Date().toISOString().split('T')[0];
+
+      document.getElementById('modalTitle').textContent = 'Edit Order #' + orderNo + ' Status';
+      document.getElementById('modalContent').innerHTML = `
+        <div class="form-group">
+          <label>Order Status</label>
+          <select id="editStatus">${statuses.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+        </div>
+        <div class="form-group">
+          <label>Review Link (optional)</label>
+          <input type="url" id="editReviewLink" placeholder="Review URL">
+        </div>
+        <div class="form-group">
+          <label>Actual Got (₹) (optional)</label>
+          <input type="number" id="editActualGot" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Buyer Actual Got (₹) (optional)</label>
+          <input type="number" id="editBuyerActualGot" placeholder="0">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-success" onclick="saveStatus()">💾 Save Status</button>
+          <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        </div>
+      `;
+      openModal();
+    }
+
+    async function saveStatus() {
+      const status = document.getElementById('editStatus').value;
+      const reviewLink = document.getElementById('editReviewLink').value;
+      const actualGot = document.getElementById('editActualGot').value;
+      const buyerActualGot = document.getElementById('editBuyerActualGot').value;
+
+      try {
+        const r = await apiCall('updateOrderStatus', {
+          orderNo: currentEditOrder,
+          orderStatus: status,
+          additionalData: { ReviewLink: reviewLink, ActualGot: actualGot, BuyerActualGot: buyerActualGot }
+        });
+        if (r.success) {
+          showToast('Status updated!', 'success');
+          closeModal();
+          loadAllOrders();
+        } else {
+          showToast(r.error || 'Failed', 'error');
+        }
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    function editPayment(orderNo) {
+      currentEditOrder = orderNo;
+      document.getElementById('modalTitle').textContent = 'Edit Payment #' + orderNo;
+      document.getElementById('modalContent').innerHTML = `
+        <div class="form-group">
+          <label>Payment Status</label>
+          <select id="editPayStatus">
+            <option value="Pending payment">Pending Payment</option>
+            <option value="Paid">Paid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Payment Method</label>
+          <select id="editPayMethod">
+            <option value="UPI">UPI</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Paytm">Paytm</option>
+            <option value="PhonePe">PhonePe</option>
+            <option value="Google Pay">Google Pay</option>
+            <option value="Cash">Cash</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Payment Date</label>
+          <input type="date" id="editPayDate" value="${new Date().toISOString().split('T')[0]}">
+        </div>
+        <div class="form-group">
+          <label>Actual Got (₹)</label>
+          <input type="number" id="editPayActualGot" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Buyer Actual Got (₹)</label>
+          <input type="number" id="editPayBuyerGot" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="editPayNotes" placeholder="Any notes..."></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-success" onclick="savePayment()">💾 Save Payment</button>
+          <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        </div>
+      `;
+      openModal();
+    }
+
+    async function savePayment() {
+      try {
+        const r = await apiCall('updatePaymentStatus', {
+          orderNo: currentEditOrder,
+          paymentStatus: document.getElementById('editPayStatus').value,
+          paymentMethod: document.getElementById('editPayMethod').value,
+          paymentDate: document.getElementById('editPayDate').value,
+          actualGot: document.getElementById('editPayActualGot').value,
+          buyerActualGot: document.getElementById('editPayBuyerGot').value,
+          notes: document.getElementById('editPayNotes').value
+        });
+        if (r.success) {
+          showToast('Payment updated!', 'success');
+          closeModal();
+          loadAllOrders();
+        } else {
+          showToast(r.error || 'Failed', 'error');
+        }
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    async function searchPayments() {
+      const dateFrom = document.getElementById('payDateFrom').value;
+      const dateTo = document.getElementById('payDateTo').value;
+      const amount = document.getElementById('payAmount').value;
+
+      try {
+        const r = await apiCall('getRecentPayments', { dateFrom, dateTo, amount });
+        if (r.success) {
+          document.getElementById('paymentsBody').innerHTML = (r.payments || []).map(p => `
+            <tr>
+              <td style="font-weight:600;color:var(--accent);">${p.OrderNo}</td>
+              <td>${p.ProductName}</td>
+              <td style="font-weight:700;color:var(--green);">₹${p.BuyerActualGot || p.ActualGot || 0}</td>
+              <td>${p.PaymentMethod || '—'}</td>
+              <td>${formatDate(p.PaymentDate)}</td>
+            </tr>
+          `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text3);">No payments found</td></tr>';
+        }
+      } catch (e) {}
+    }
+
+    async function fetchExistingOrder() {
+      const pid = document.getElementById('fetchPlatformId').value.trim();
+      if (!pid) { showToast('Enter Platform Order ID', 'warning'); return; }
+
+      try {
+        const r = await apiCall('fetchByPlatformOrderID', { platformOrderId: pid });
+        if (r.success && r.found) {
+          const o = r.order;
+          document.getElementById('admPlatformId').value = o.PlatformOrderID || '';
+          document.getElementById('admPlatform').value = o.OrderedPlatform || '';
+          document.getElementById('admAccount').value = o.AccountName || '';
+          document.getElementById('admProduct').value = o.ProductName || '';
+          document.getElementById('admSeller').value = o.SellerName || '';
+          document.getElementById('admLink').value = o.ProductLink || '';
+          document.getElementById('admPrice').value = o.PricePaid || '';
+          document.getElementById('admLess').value = o.Less || '';
+          document.getElementById('admMediator').value = o.MediatorName || '';
+          document.getElementById('admContact').value = o.DealContactNo || '';
+          document.getElementById('admForWhom').value = o.ForWhom || 'Self';
+          document.getElementById('admDate').value = o.OrderDate ? new Date(o.OrderDate).toISOString().split('T')[0] : '';
+          document.getElementById('admNotes').value = o.Notes || '';
+          document.getElementById('admMedForm').value = o.MediatorOrderForm || '';
+          document.getElementById('admRefundForm').value = o.MediatorRefundForm || '';
+          calcToGet();
+          showToast('Order details loaded!', 'success');
+        } else {
+          showToast('Order ID not found in records', 'info');
+        }
+      } catch (e) { showToast('Error fetching', 'error'); }
+    }
+
+    async function submitAdminOrder() {
+      const required = ['admPlatform', 'admAccount', 'admProduct', 'admPlatformId', 'admPrice', 'admDate'];
+      for (const id of required) {
+        if (!document.getElementById(id).value) {
+          showToast('Please fill all required fields', 'warning');
+          return;
+        }
+      }
+
+      let screenshotUrl = '';
+      const fileInput = document.getElementById('admScreenshot');
+      if (fileInput.files && fileInput.files[0]) {
+        try {
+          const base64 = await compressImage(fileInput.files[0]);
+          const ur = await apiCall('uploadImage', { imageBase64: base64, fileName: 'admin_order_' + Date.now() + '.jpg' });
+          if (ur.success) screenshotUrl = ur.fileUrl;
+        } catch (e) {}
+      }
+
+      const data = {
+        OrderedPlatform: document.getElementById('admPlatform').value,
+        AccountName: document.getElementById('admAccount').value,
+        ProductName: document.getElementById('admProduct').value,
+        SellerName: document.getElementById('admSeller').value,
+        ProductLink: document.getElementById('admLink').value,
+        PlatformOrderID: document.getElementById('admPlatformId').value,
+        PricePaid: document.getElementById('admPrice').value,
+        Less: document.getElementById('admLess').value,
+        DealContactNo: document.getElementById('admContact').value,
+        MediatorName: document.getElementById('admMediator').value,
+        OrderDate: document.getElementById('admDate').value,
+        ForWhom: document.getElementById('admForWhom').value,
+        UserID: document.getElementById('admUserId').value,
+        BuyerLess: document.getElementById('admBuyerLess').value,
+        Notes: document.getElementById('admNotes').value,
+        MediatorOrderForm: document.getElementById('admMedForm').value,
+        MediatorRefundForm: document.getElementById('admRefundForm').value,
+        OrderScreenshot: screenshotUrl
+      };
+
+      try {
+        const r = await apiCall('addOrder', data);
+        if (r.success) {
+          showToast('Order #' + r.orderNo + ' added!', 'success');
+          clearAdminForm();
+          loadNextOrderNo();
+          loadAllOrders();
+          loadStats();
+          switchTab('orders');
+        } else {
+          showToast(r.error || 'Failed', 'error');
+        }
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    function clearAdminForm() {
+      ['admProduct', 'admSeller', 'admLink', 'admPlatformId', 'admPrice', 'admLess', 'admToGet', 'admBuyerLess', 'admNotes', 'admMedForm', 'admRefundForm'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('adminImgPreview').innerHTML = '';
+      document.getElementById('admScreenshot').value = '';
+      loadNextOrderNo();
+    }
+
+    function previewAdminImage(input) {
+      const preview = document.getElementById('adminImgPreview');
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => { preview.innerHTML = `<img src="${e.target.result}" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid var(--border);">`; };
+        reader.readAsDataURL(input.files[0]);
+      } else { preview.innerHTML = ''; }
+    }
+
+    // WhatsApp
+    async function populateOrderSelects() {
+      try {
+        const r = await apiCall('getOrders');
+        if (r.success) {
+          const opts = (r.orders || []).map(o => `<option value="${o.OrderNo}">#${o.OrderNo} - ${o.ProductName || 'Product'}</option>`).join('');
+          document.getElementById('waOrderSelect').innerHTML = '<option value="">-- Select order --</option>' + opts;
+          document.getElementById('emailOrderSelect').innerHTML = '<option value="">-- Select order --</option>' + opts;
+        }
+      } catch (e) {}
+    }
+
+    async function fillWAOrder() {
+      const orderNo = document.getElementById('waOrderSelect').value;
+      if (!orderNo) return;
+      try {
+        const r = await apiCall('getOrderByPlatformID', { platformOrderId: orderNo });
+        if (r.success && r.order) {
+          const o = r.order;
+          const t = o.tracking || {};
+          document.getElementById('waMessage').value =
+`📋 Order #${o.OrderNo}
+📅 Date: ${o.OrderDate}
+🏪 Platform: ${o.OrderedPlatform}
+👤 Account: ${o.AccountName}
+📦 Product: ${o.ProductName}
+🆔 Order ID: ${o.PlatformOrderID}
+💰 Price: ₹${o.PricePaid}
+💸 BuyerLess: ₹${o.BuyerLess || 0}
+📊 Status: ${t.OrderStatus || 'Order Placed'}
+💳 Payment: ${t.PaymentStatus || 'Pending'}`;
+        }
+      } catch (e) {}
+    }
+
+    async function sendWA() {
+      const number = document.getElementById('waNumber').value.trim();
+      const message = document.getElementById('waMessage').value.trim();
+      if (!number || !message) { showToast('Fill number and message', 'warning'); return; }
+
+      try {
+        const r = await apiCall('sendWhatsApp', { to: number, message });
+        if (r.success) showToast('WhatsApp sent!', 'success');
+        else showToast(r.error || 'Failed', 'error');
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    // Email
+    async function fillEmailOrder() {
+      const orderNo = document.getElementById('emailOrderSelect').value;
+      if (!orderNo) return;
+      try {
+        const r = await apiCall('getOrderByPlatformID', { platformOrderId: orderNo });
+        if (r.success && r.order) {
+          const o = r.order;
+          document.getElementById('emailSubject').value = 'SastaDeal - Order #' + o.OrderNo;
+          document.getElementById('emailBody').value =
+`Order #${o.OrderNo}
+Date: ${o.OrderDate}
+Platform: ${o.OrderedPlatform}
+Product: ${o.ProductName}
+Price: ₹${o.PricePaid}
+BuyerLess: ₹${o.BuyerLess || 0}
+Status: ${o.tracking?.OrderStatus || 'Order Placed'}
+Payment: ${o.tracking?.PaymentStatus || 'Pending'}`;
+        }
+      } catch (e) {}
+    }
+
+    async function sendEmailManual() {
+      const to = document.getElementById('emailTo').value.trim();
+      const subject = document.getElementById('emailSubject').value.trim();
+      const body = document.getElementById('emailBody').value.trim();
+      const orderNo = document.getElementById('emailOrderSelect').value;
+
+      if (!to || !subject || !body) { showToast('Fill all fields', 'warning'); return; }
+
+      try {
+        const r = await apiCall('sendManualEmail', { to, subject, body, orderNo });
+        if (r.success) showToast('Email sent!', 'success');
+        else showToast(r.error || 'Failed', 'error');
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    // Mediators
+    async function loadMediators() {
+      try {
+        const r = await apiCall('getMediators');
+        if (r.success) {
+          document.getElementById('mediatorsBody').innerHTML = (r.mediators || []).map(m =>
+            `<tr><td>${m.name}</td><td>${m.contact}</td><td>${m.whatsapp}</td></tr>`
+          ).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text3);">No mediators</td></tr>';
+        }
+      } catch (e) {}
+    }
+
+    async function addMediator() {
+      const name = document.getElementById('medName').value.trim();
+      const contact = document.getElementById('medContact').value.trim();
+      const whatsapp = document.getElementById('medWhatsapp').value.trim();
+      if (!name || !contact) { showToast('Fill name and contact', 'warning'); return; }
+
+      try {
+        const r = await apiCall('addMediator', { name, contact, whatsapp });
+        if (r.success) {
+          showToast('Mediator added!', 'success');
+          document.getElementById('medName').value = '';
+          document.getElementById('medContact').value = '';
+          document.getElementById('medWhatsapp').value = '';
+          loadMediators();
+          refreshDropdowns();
+        }
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    // Buyers
+    async function loadBuyers() {
+      try {
+        const r = await apiCall('getBuyers');
+        if (r.success) {
+          document.getElementById('buyersBody').innerHTML = (r.buyers || []).map(b =>
+            `<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${b.userId}</td><td>${b.name}</td><td>${b.mobile}</td><td>${b.email || '—'}</td><td>${b.parentId || '—'}</td></tr>`
+          ).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text3);">No buyers</td></tr>';
+        }
+      } catch (e) {}
+    }
+
+    async function addBuyerAccount() {
+      const name = document.getElementById('buyerName').value.trim();
+      const mobile = document.getElementById('buyerMobile').value.trim();
+      const email = document.getElementById('buyerEmail').value.trim();
+      const password = document.getElementById('buyerPassword').value.trim();
+      const parentId = document.getElementById('buyerParent').value;
+
+      if (!name || !mobile) { showToast('Fill name and mobile', 'warning'); return; }
+
+      try {
+        const r = await apiCall('addBuyer', { name, mobile, email, password, parentId });
+        if (r.success) {
+          showToast('Buyer added!', 'success');
+          ['buyerName', 'buyerMobile', 'buyerEmail', 'buyerPassword'].forEach(id => document.getElementById(id).value = '');
+          loadBuyers();
+          refreshDropdowns();
+        }
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    function saveSettings() {
+      const wa = document.getElementById('settingsWA').value.trim();
+      const email = document.getElementById('settingsEmail').value.trim();
+      localStorage.setItem('sastadeal_admin_wa', wa);
+      localStorage.setItem('sastadeal_admin_email', email);
+      showToast('Settings saved!', 'success');
+    }
+
+    function openModal() { document.getElementById('editModal').classList.add('open'); }
+    function closeModal() { document.getElementById('editModal').classList.remove('open'); }
+
+    // Set default date
+    document.getElementById('admDate').valueAsDate = new Date();
+
+    init();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c4dbec2f487a01',t:'MTc4NDI0NTMwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

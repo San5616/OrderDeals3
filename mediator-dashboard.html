@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mediator Panel — SastaDeal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="_config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #070b14; --surface: #0d1526; --surface2: #111d35; --surface3: #162040;
+      --accent: #3b82f6; --accent-hover: #2563eb; --accent-glow: rgba(59,130,246,0.15);
+      --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
+      --pink: #ec4899; --cyan: #06b6d4; --orange: #f97316;
+      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+      --border: rgba(59,130,246,0.12); --radius: 16px; --radius-sm: 10px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(7,11,20,0.92); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); padding: 0 20px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-brand .icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; -webkit-text-fill-color: white; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-user { font-size: 13px; color: var(--text2); }
+    .nav-user strong { color: var(--text); }
+    .btn-logout {
+      padding: 7px 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; color: var(--red); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+
+    .main-content { padding-top: 84px; padding-bottom: 40px; max-width: 1000px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
+
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-bottom: 24px;
+    }
+    .stat-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 18px; text-align: center;
+    }
+    .stat-box .val { font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+    .stat-box .lbl { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { background: var(--surface2); padding: 10px 12px; text-align: left; font-weight: 600; color: var(--text2); font-size: 11px; text-transform: uppercase; white-space: nowrap; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+
+    .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-row select {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 9px 14px; color: var(--text); font-size: 13px; outline: none; font-family: 'Inter', sans-serif;
+    }
+
+    .empty-state { text-align: center; padding: 40px; color: var(--text3); }
+    .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+
+    .days-badge {
+      display: inline-block; padding: 2px 7px; border-radius: 8px;
+      font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .nav-user { display: none; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand"><span class="icon">🤝</span> SastaDeal</a>
+    <div class="nav-right">
+      <span class="nav-user">Hi, <strong id="userName">Mediator</strong></span>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div style="margin-bottom:20px;">
+      <h2 style="font-size:20px;font-weight:800;">🤝 Mediator Dashboard</h2>
+      <p style="color:var(--text3);font-size:13px;">Track orders you've given to admin</p>
+    </div>
+
+    <div class="stats-row" id="medStats"></div>
+
+    <div class="card">
+      <h3>📋 My Orders</h3>
+      <div class="filter-row">
+        <select id="statusFilter" onchange="filterOrders()">
+          <option value="">All Status</option>
+          <option value="Order Placed">Order Placed</option>
+          <option value="Product Received">Product Received</option>
+          <option value="Reviewed">Reviewed</option>
+          <option value="Review Live">Review Live</option>
+          <option value="Refund form filled">Refund Form Filled</option>
+          <option value="Got Refund">Got Refund</option>
+        </select>
+        <select id="refundFilter" onchange="filterOrders()">
+          <option value="">All Refunds</option>
+          <option value="pending">Pending Refund</option>
+          <option value="done">Refunded</option>
+        </select>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Platform</th><th>Product</th><th>Price</th>
+              <th>Less</th><th>Status</th><th>Refund</th><th>Days</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state hidden">
+        <div class="emoji">📦</div>
+        <h3>No orders found</h3>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (!isLoggedIn() || !isMediator()) window.location.href = 'login.html';
+
+    const session = getSession();
+    document.getElementById('userName').textContent = session.name || 'Mediator';
+
+    let allOrders = [];
+
+    async function loadOrders() {
+      try {
+        const r = await apiCall('getMediatorOrders', { mediatorName: session.name });
+        if (r.success) {
+          allOrders = r.orders || [];
+          renderStats(r);
+          renderOrders(allOrders);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderStats(r) {
+      const totalOrders = r.total || 0;
+      const totalLess = r.totalLess || 0;
+      const totalRefund = r.totalRefund || 0;
+      const pending = totalOrders - (allOrders.filter(o => o.OrderStatus === 'Got Refund').length);
+
+      document.getElementById('medStats').innerHTML = `
+        <div class="stat-box">
+          <div class="val" style="color:var(--accent);">${totalOrders}</div>
+          <div class="lbl">Total Orders</div>
+        </div>
+        <div class="stat-box">
+          <div class="val" style="color:var(--yellow);">₹${totalLess.toLocaleString('en-IN')}</div>
+          <div class="lbl">Total Less</div>
+        </div>
+        <div class="stat-box">
+          <div class="val" style="color:var(--green);">₹${totalRefund.toLocaleString('en-IN')}</div>
+          <div class="lbl">Total Refund</div>
+        </div>
+        <div class="stat-box">
+          <div class="val" style="color:var(--orange);">${pending}</div>
+          <div class="lbl">Pending</div>
+        </div>
+      `;
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('ordersBody');
+      const today = new Date();
+
+      if (!orders.length) {
+        tbody.innerHTML = '';
+        document.getElementById('emptyState').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('emptyState').classList.add('hidden');
+
+      tbody.innerHTML = orders.map(o => {
+        let daysHtml = '';
+        if (o.RefundFormDate && !o.RefundDate) {
+          const days = daysBetween(o.RefundFormDate, today);
+          if (days !== null) daysHtml = `<span class="days-badge" style="background:rgba(245,158,11,0.1);color:var(--yellow);">${days}d</span>`;
+        } else if (o.RefundFormDate && o.RefundDate) {
+          const days = daysBetween(o.RefundFormDate, o.RefundDate);
+          if (days !== null) daysHtml = `<span class="days-badge" style="background:rgba(16,185,129,0.1);color:var(--green);">${days}d ✓</span>`;
+        }
+
+        const refundStatus = o.OrderStatus === 'Got Refund' ?
+          '<span style="color:var(--green);font-weight:600;">✅ Refunded</span>' :
+          '<span style="color:var(--yellow);font-weight:600;">⏳ Pending</span>';
+
+        return `
+          <tr>
+            <td style="font-weight:600;color:var(--accent);">${o.OrderNo}</td>
+            <td>${o.OrderedPlatform}</td>
+            <td>${o.ProductName}</td>
+            <td>₹${o.PricePaid || 0}</td>
+            <td style="font-weight:600;color:var(--green);">₹${o.Less || 0}</td>
+            <td>${statusBadge(o.OrderStatus || 'Order Placed')}</td>
+            <td>${refundStatus}</td>
+            <td>${daysHtml || '—'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterOrders() {
+      const status = document.getElementById('statusFilter').value;
+      const refund = document.getElementById('refundFilter').value;
+
+      let filtered = allOrders;
+      if (status) filtered = filtered.filter(o => o.OrderStatus === status);
+      if (refund === 'pending') filtered = filtered.filter(o => o.OrderStatus !== 'Got Refund');
+      if (refund === 'done') filtered = filtered.filter(o => o.OrderStatus === 'Got Refund');
+
+      renderOrders(filtered);
+    }
+
+    loadOrders();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c4df550fbc7a0a',t:'MTc4NDI0NTQ0MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
