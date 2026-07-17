@@ -1,191 +1,281 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Dashboard — SastaDeal</title>
+  <title>Orders Dashboard — SastaDeal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="_config.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #070b14; --surface: #0d1526; --surface2: #111d35; --surface3: #162040;
-      --accent: #3b82f6; --green: #10b981; --yellow: #f59e0b; --red: #ef4444;
-      --purple: #8b5cf6; --pink: #ec4899; --cyan: #06b6d4; --orange: #f97316;
-      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
-      --border: rgba(59,130,246,0.12); --radius: 12px; --radius-sm: 8px;
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #f0f2f5; --surface3: #e8eaed;
+      --accent: #2563eb; --accent-hover: #1d4ed8; --accent-glow: rgba(37,99,235,0.08);
+      --green: #16a34a; --yellow: #d97706; --red: #dc2626; --purple: #7c3aed;
+      --pink: #db2777; --cyan: #0891b2; --orange: #ea580c;
+      --text: #1e293b; --text2: #475569; --text3: #94a3b8;
+      --border: #e2e8f0; --border2: #cbd5e1;
+      --radius: 12px; --radius-sm: 8px;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    [data-theme="dark"] {
+      --bg: #0f172a; --surface: #1e293b; --surface2: #273549; --surface3: #334155;
+      --accent: #3b82f6; --accent-hover: #2563eb; --accent-glow: rgba(59,130,246,0.1);
+      --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+      --border: #334155; --border2: #475569;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
     a { text-decoration: none; color: inherit; }
 
     .navbar {
       position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-      background: rgba(7,11,20,0.95); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border); padding: 0 16px; height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between;
+      box-shadow: var(--card-shadow);
     }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
     .nav-brand {
-      display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800;
+      display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800;
       background: linear-gradient(135deg, var(--accent), var(--purple));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .nav-brand .icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; -webkit-text-fill-color: white; }
+    .nav-subtitle { font-size: 11px; color: var(--text3); font-weight: 500; }
     .nav-right { display: flex; align-items: center; gap: 10px; }
-    .nav-user { font-size: 12px; color: var(--text2); }
-    .nav-user strong { color: var(--text); }
-    .btn-logout { padding: 6px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; color: var(--red); font-size: 11px; font-weight: 600; cursor: pointer; }
 
-    .main-content { padding-top: 70px; padding-bottom: 30px; max-width: 800px; margin: 0 auto; padding-left: 12px; padding-right: 12px; }
-
-    /* Compact Tabs */
-    .dash-tabs {
-      display: flex; gap: 3px; background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 3px; margin-bottom: 14px;
+    /* Theme Toggle */
+    .theme-toggle {
+      width: 40px; height: 22px; border-radius: 11px; background: var(--surface2);
+      border: 1px solid var(--border); position: relative; cursor: pointer;
+      transition: background 0.3s;
     }
-    .dash-tab {
-      flex: 1; padding: 8px 6px; border-radius: var(--radius-sm); font-size: 12px;
-      font-weight: 600; text-align: center; cursor: pointer; border: none;
-      background: transparent; color: var(--text3); transition: all 0.2s;
+    .theme-toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+      border-radius: 50%; background: var(--accent); transition: transform 0.3s;
     }
-    .dash-tab.active { background: var(--accent); color: white; }
+    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
+    .theme-label { font-size: 10px; color: var(--text3); font-weight: 600; }
 
-    /* Compact Stats */
+    .btn-logout { padding: 6px 14px; background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; color: var(--red); font-size: 11px; font-weight: 600; cursor: pointer; }
+
+    .main-content { padding-top: 68px; padding-bottom: 30px; max-width: 860px; margin: 0 auto; padding-left: 12px; padding-right: 12px; }
+
+    /* Stats Row */
     .stats-row {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 6px; margin-bottom: 12px;
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 8px; margin-bottom: 14px;
     }
     .stat-box {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 10px 8px; text-align: center;
+      border-radius: var(--radius); padding: 12px 10px; text-align: left;
+      box-shadow: var(--card-shadow);
     }
-    .stat-box .val { font-size: 16px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
-    .stat-box .lbl { font-size: 9px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.3px; }
+    .stat-box .val { font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+    .stat-box .lbl { font-size: 9px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.3px; }
+    .stat-box .icon-sm { font-size: 14px; margin-bottom: 4px; }
 
-    /* Filters */
-    .filter-row { display: flex; gap: 6px; margin-bottom: 10px; }
-    .filter-row select {
-      flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    /* Filter Bar */
+    .filter-bar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 12px; margin-bottom: 14px;
+      box-shadow: var(--card-shadow);
+    }
+    .filter-search { display: flex; gap: 6px; margin-bottom: 8px; }
+    .filter-search select, .filter-search input {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
       padding: 7px 10px; color: var(--text); font-size: 12px; outline: none; font-family: 'Inter', sans-serif;
     }
+    .filter-search select { width: 110px; }
+    .filter-search input { flex: 1; }
+    .filter-search input:focus, .filter-search select:focus { border-color: var(--accent); }
+    .filter-search button { background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
-    /* Compact Order Card */
-    .order-list { display: flex; flex-direction: column; gap: 8px; }
+    .show-only { display: flex; gap: 6px; flex-wrap: wrap; }
+    .show-only label {
+      display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text2);
+      cursor: pointer; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .show-only label:hover { background: var(--accent-glow); border-color: var(--accent); }
+    .show-only input[type="radio"] { accent-color: var(--accent); }
+    .show-only label:has(input:checked) { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+    /* Order Card */
+    .order-list { display: flex; flex-direction: column; gap: 10px; }
     .order-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px;
+      border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow);
     }
     .order-header {
+      background: var(--accent); color: white; padding: 10px 14px;
       display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 8px;
+      position: relative;
     }
-    .order-header h4 { font-size: 13px; font-weight: 700; line-height: 1.3; flex: 1; margin-right: 8px; }
-    .order-header .order-no { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); font-weight: 600; white-space: nowrap; }
-    .order-badges { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+    .order-header-left { flex: 1; }
+    .order-id { font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 6px; }
+    .copy-btn {
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px; padding: 2px 8px; font-size: 10px; cursor: pointer;
+      color: white; font-weight: 500;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.25); }
+    .order-platform-product { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+    .order-header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .order-date { font-size: 10px; opacity: 0.8; }
+    .status-badge {
+      padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: 700;
+      background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);
+    }
 
-    .badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
-    .badge-green { background: rgba(16,185,129,0.15); color: var(--green); }
-    .badge-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
-    .badge-blue { background: rgba(59,130,246,0.15); color: var(--accent); }
+    .order-actions-bar {
+      display: flex; gap: 6px; padding: 8px 14px; background: var(--surface2);
+      border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .action-btn {
+      padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+      color: var(--text2); transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+    }
+    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .action-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
 
-    /* Compact Order Info Grid */
-    .order-info-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px;
+    /* Status Message */
+    .status-message {
+      padding: 10px 14px; font-size: 12px; line-height: 1.5;
+      border-bottom: 1px solid var(--border);
     }
-    .info-cell { }
-    .info-cell label { font-size: 8px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; display: block; }
-    .info-cell span { font-size: 12px; font-weight: 600; }
-    .info-cell.mono { font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+    .status-message.success { background: rgba(22,163,74,0.05); color: var(--green); }
+    .status-message.warning { background: rgba(217,119,6,0.05); color: var(--yellow); }
+    .status-message.info { background: var(--surface2); color: var(--text2); }
+    .status-message strong { font-weight: 700; }
 
-    /* Compact Timeline */
-    .compact-timeline {
-      display: flex; flex-direction: column; gap: 4px; margin-top: 8px;
-      padding-top: 8px; border-top: 1px solid var(--border);
+    /* Expandable Details */
+    .order-details-toggle {
+      padding: 10px 14px; cursor: pointer; font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--text2); border-bottom: 1px solid var(--border);
     }
-    .timeline-step-row {
-      display: flex; align-items: center; gap: 8px; font-size: 11px;
+    .order-details-toggle:hover { background: var(--surface2); }
+    .order-details-toggle .arrow { transition: transform 0.3s; font-size: 14px; }
+    .order-details-toggle.open .arrow { transform: rotate(180deg); }
+
+    .order-details-content {
+      padding: 14px; display: none;
     }
-    .step-dot {
-      width: 14px; height: 14px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 8px; flex-shrink: 0;
-      background: var(--surface3); border: 2px solid var(--border);
+    .order-details-content.open { display: block; }
+
+    .details-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
     }
-    .step-dot.done { background: var(--green); border-color: var(--green); }
-    .step-dot.active { background: var(--accent); border-color: var(--accent); }
-    .step-dot.pending { background: var(--surface3); border-color: var(--border); }
-    .step-label { flex: 1; font-weight: 500; color: var(--text2); }
-    .step-label.active-label { color: var(--text); font-weight: 600; }
-    .step-date { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
-    .step-days { font-size: 9px; padding: 1px 5px; border-radius: 6px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
-    .step-days.waiting { background: rgba(245,158,11,0.15); color: var(--yellow); }
-    .step-days.done-days { background: rgba(16,185,129,0.15); color: var(--green); }
+    .detail-item label { font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    .detail-item span { font-size: 13px; font-weight: 600; }
+    .detail-item.mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .detail-item .amount { color: var(--green); font-size: 16px; font-weight: 800; }
+
+    .detail-section-title { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; margin: 10px 0 6px; letter-spacing: 0.3px; }
+
+    .detail-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+
+    /* Timeline */
+    .timeline-popup {
+      display: none; padding: 14px; background: var(--surface2);
+      border-top: 1px solid var(--border);
+    }
+    .timeline-popup.open { display: block; }
+    .timeline-step {
+      display: flex; align-items: center; gap: 8px; padding: 6px 0;
+      font-size: 12px; border-bottom: 1px solid var(--border);
+    }
+    .timeline-step:last-child { border-bottom: none; }
+    .t-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .t-dot.done { background: var(--green); }
+    .t-dot.active { background: var(--accent); }
+    .t-dot.pending { background: var(--border2); }
+    .t-label { flex: 1; font-weight: 500; }
+    .t-date { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+    .t-days { font-size: 10px; padding: 1px 5px; border-radius: 6px; font-weight: 600; }
+
+    .hidden { display: none !important; }
+    .empty-state { text-align: center; padding: 40px; color: var(--text3); }
+
+    /* Tabs */
+    .dash-tabs { display: flex; gap: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 3px; margin-bottom: 14px; }
+    .dash-tab { flex: 1; padding: 8px 6px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; border: none; background: transparent; color: var(--text3); }
+    .dash-tab.active { background: var(--accent); color: white; }
 
     /* Forms */
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text);
-      font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
-    }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
     .btn-submit { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; }
 
-    .hidden { display: none !important; }
-    .empty-state { text-align: center; padding: 30px; color: var(--text3); }
-    .empty-state .emoji { font-size: 32px; margin-bottom: 8px; }
-
-    /* Deal cards compact */
-    .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+    /* Deals grid */
+    .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
     .deal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    .deal-card .deal-img { height: 100px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .deal-card .deal-img { height: 90px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 26px; }
     .deal-card .deal-img img { width: 100%; height: 100%; object-fit: cover; }
     .deal-card .deal-body { padding: 10px; }
-    .deal-card h4 { font-size: 12px; font-weight: 600; margin-bottom: 6px; line-height: 1.3; }
+    .deal-card h4 { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
 
-    @media (max-width: 480px) {
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-      .order-info-grid { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .details-grid { grid-template-columns: 1fr; }
+      .nav-subtitle { display: none; }
     }
   </style>
 </head>
 <body>
   <nav class="navbar">
-    <a href="index.html" class="nav-brand"><span class="icon">💰</span> SastaDeal</a>
+    <div class="nav-left">
+      <div>
+        <a href="index.html" class="nav-brand"><span class="icon"></span> SastaDeal</a>
+        <div class="nav-subtitle" id="navSubtitle">Orders Dashboard</div>
+      </div>
+    </div>
     <div class="nav-right">
-      <span class="nav-user">Hi, <strong id="userName">Buyer</strong></span>
+      <span style="font-size:11px;color:var(--text2);" id="userDisplay">User</span>
+      <span class="theme-label">️</span>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></div>
       <button class="btn-logout" onclick="logout()">Logout</button>
     </div>
   </nav>
 
   <div class="main-content">
+    <!-- Tabs -->
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchSection('orders')" id="sec-orders">📦 Orders</button>
-      <button class="dash-tab" onclick="switchSection('deals')" id="sec-deals">🔥 Deals</button>
+      <button class="dash-tab" onclick="switchSection('deals')" id="sec-deals"> Deals</button>
       <button class="dash-tab" onclick="switchSection('neworder')" id="sec-neworder">➕ New</button>
-      <button class="dash-tab" onclick="switchSection('query')" id="sec-query"> Query</button>
+      <button class="dash-tab" onclick="switchSection('query')" id="sec-query">❓ Query</button>
     </div>
 
     <!-- Orders Section -->
     <div id="ordersSection">
       <div class="stats-row" id="myStats"></div>
-      <div class="filter-row">
-        <select id="statusFilter" onchange="filterMyOrders()">
-          <option value="">All Status</option>
-          <option value="Order Placed">Order Placed</option>
-          <option value="Product Received">Product Received</option>
-          <option value="Reviewed">Reviewed</option>
-          <option value="Review Live">Review Live</option>
-          <option value="Refund form filled">Refund Form Filled</option>
-          <option value="Got Refund">Got Refund</option>
-        </select>
-        <select id="paymentFilter" onchange="filterMyOrders()">
-          <option value="">All Payments</option>
-          <option value="Pending payment">Pending</option>
-          <option value="Paid">Paid</option>
-        </select>
+
+      <div class="filter-bar">
+        <div class="filter-search">
+          <select id="filterType">
+            <option value="id">Order ID</option>
+            <option value="product">Product</option>
+            <option value="platform">Platform</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="Search...">
+          <button onclick="applyFilters()">🔍</button>
+        </div>
+        <div class="show-only">
+          <label><input type="radio" name="showOnly" value="all" checked onchange="applyFilters()"> All</label>
+          <label><input type="radio" name="showOnly" value="Paid" onchange="applyFilters()"> Paid</label>
+          <label><input type="radio" name="showOnly" value="Pending payment" onchange="applyFilters()"> Pending</label>
+          <label><input type="radio" name="showOnly" value="Got Refund" onchange="applyFilters()"> Refunded</label>
+          <label><input type="radio" name="showOnly" value="Refund form filled" onchange="applyFilters()"> Form Filled</label>
+          <label><input type="radio" name="showOnly" value="Review Live" onchange="applyFilters()"> Review Live</label>
+        </div>
       </div>
+
       <div class="order-list" id="orderList"></div>
     </div>
 
@@ -201,7 +291,7 @@
         <div class="form-group"><label>Platform</label><select id="newPlatform"></select></div>
         <div class="form-group"><label>Account Name</label><select id="newAccount"></select></div>
         <div class="form-group"><label>Product Name</label><input type="text" id="newProduct" placeholder="Product name"></div>
-        <div class="form-group"><label>Platform Order ID</label><input type="text" id="newPlatformId" placeholder="Order ID"></div>
+        <div class="form-group"><label>Platform Order ID</label><input type="text" id="newPlatformId" placeholder="Order ID from platform"></div>
         <div class="form-group"><label>Price Paid (₹)</label><input type="number" id="newPrice" placeholder="0"></div>
         <div class="form-group"><label>Order Date</label><input type="date" id="newDate"></div>
         <div class="form-group"><label>Screenshot</label><input type="file" id="newScreenshot" accept="image/*" onchange="previewImage(this)"><div id="imgPreview" style="margin-top:6px;"></div></div>
@@ -216,8 +306,8 @@
         <h3 style="font-size:14px;font-weight:700;margin-bottom:14px;">❓ Raise Query</h3>
         <div class="form-group"><label>Select Order</label><select id="queryOrder"><option value="">-- Select order --</option></select></div>
         <div class="form-group"><label>Subject</label><input type="text" id="querySubject" placeholder="Query subject"></div>
-        <div class="form-group"><label>Message</label><textarea id="queryMessage" placeholder="Describe issue..."></textarea></div>
-        <button class="btn-submit" onclick="submitQuery()">Send Query →</button>
+        <div class="form-group"><label>Message</label><textarea id="queryMessage" placeholder="Describe your issue..."></textarea></div>
+        <button class="btn-submit" onclick="submitQuery()">Send Query via Email →</button>
       </div>
     </div>
   </div>
@@ -225,8 +315,22 @@
   <script>
     if (!isLoggedIn() || !isBuyer()) window.location.href = 'login.html';
     const session = getSession();
-    document.getElementById('userName').textContent = session.name || 'Buyer';
-    let allOrders = [], dropdownData = {};
+    document.getElementById('userDisplay').textContent = session.name || 'Buyer';
+    document.getElementById('navSubtitle').textContent = session.name + ' — Orders Dashboard';
+
+    let allOrders = [], filteredOrders = [], dropdownData = {};
+
+    // Theme
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('sastadeal_theme', next);
+    }
+    // Load saved theme
+    const savedTheme = localStorage.getItem('sastadeal_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 
     function switchSection(sec) {
       document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
@@ -238,147 +342,200 @@
     }
 
     async function loadData() {
-      try {
-        const dd = await apiCall('getDropdowns');
-        if (dd.success) dropdownData = dd;
-      } catch (e) {}
-
-      const platformSel = document.getElementById('newPlatform');
-      if (dropdownData.platforms) {
-        platformSel.innerHTML = '<option value="">Select</option>' + dropdownData.platforms.map(p => `<option value="${p}">${p}</option>`).join('');
-      }
-      const accountSel = document.getElementById('newAccount');
+      try { const dd = await apiCall('getDropdowns'); if (dd.success) dropdownData = dd; } catch (e) {}
+      const ps = document.getElementById('newPlatform');
+      if (dropdownData.platforms) ps.innerHTML = '<option value="">Select</option>' + dropdownData.platforms.map(p => `<option value="${p}">${p}</option>`).join('');
+      const as = document.getElementById('newAccount');
       if (dropdownData.accounts) {
-        const myAccounts = dropdownData.accounts.filter(a => a.userId === session.userid || a.mobile === session.mobile || a.email === session.email);
-        accountSel.innerHTML = '<option value="">Select</option>' + myAccounts.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+        const my = dropdownData.accounts.filter(a => a.userId === session.userid || a.mobile === session.mobile || a.email === session.email);
+        as.innerHTML = '<option value="">Select</option>' + my.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
       }
       loadMyOrders();
     }
 
     async function loadMyOrders() {
       const listEl = document.getElementById('orderList');
-      listEl.innerHTML = '<div class="empty-state"><div class="emoji">⏳</div><p>Loading...</p></div>';
+      listEl.innerHTML = '<div class="empty-state">Loading orders...</div>';
       try {
-        const result = await apiCall('getBuyerOrders', { userId: session.userid });
-        if (result.success) { allOrders = result.orders || []; renderOrders(allOrders); renderStats(allOrders); populateQueryOrders(allOrders); }
-      } catch (e) { listEl.innerHTML = '<div class="empty-state"><div class="emoji">❌</div><p>Error loading</p></div>'; }
+        const r = await apiCall('getBuyerOrders', { userId: session.userid });
+        if (r.success) { allOrders = r.orders || []; filteredOrders = [...allOrders]; renderStats(allOrders); renderOrders(allOrders); populateQueryOrders(allOrders); }
+      } catch (e) { listEl.innerHTML = '<div class="empty-state">Error loading orders</div>'; }
+    }
+
+    function daysAgo(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      const now = new Date();
+      const diff = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+      if (diff === 0) return '(today)';
+      if (diff === 1) return '(1 day ago)';
+      return `(${diff} days ago)`;
     }
 
     function renderStats(orders) {
-      let total = orders.length, inProgress = 0, refunded = 0, paid = 0;
-      let totalToGet = 0, totalPaid = 0, totalReceived = 0;
+      let total = orders.length, paid = 0, pending = 0, refunded = 0;
+      let totalPricePaid = 0, totalPaidAmt = 0, totalReceived = 0, pendingForm = 0;
       orders.forEach(o => {
-        if (o.OrderStatus !== 'Got Refund') inProgress++; else refunded++;
-        if (o.PaymentStatus === 'Paid') paid++;
-        totalToGet += parseFloat(o.BuyerToget || 0);
+        totalPricePaid += parseFloat(o.PricePaid || 0);
         totalReceived += parseFloat(o.BuyerActualGot || 0);
-        if (o.PaymentStatus === 'Paid') totalPaid += parseFloat(o.BuyerActualGot || o.BuyerToget || 0);
+        if (o.PaymentStatus === 'Paid') { paid++; totalPaidAmt += parseFloat(o.BuyerActualGot || o.BuyerToget || 0); }
+        else pending++;
+        if (o.OrderStatus === 'Got Refund') refunded++;
+        if (o.OrderStatus === 'Refund form filled') pendingForm++;
       });
       document.getElementById('myStats').innerHTML = `
-        <div class="stat-box"><div class="val" style="color:var(--accent);">${total}</div><div class="lbl">Total</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--yellow);">${inProgress}</div><div class="lbl">Active</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--green);">${refunded}</div><div class="lbl">Refunded</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--purple);">${paid}</div><div class="lbl">Paid</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--cyan);">₹${totalToGet.toLocaleString('en-IN')}</div><div class="lbl">To Get</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--green);">₹${totalReceived.toLocaleString('en-IN')}</div><div class="lbl">Received</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--orange);">₹${totalPaid.toLocaleString('en-IN')}</div><div class="lbl">Paid Amt</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--text2);">₹${(totalToGet - totalReceived).toLocaleString('en-IN')}</div><div class="lbl">Pending</div></div>
+        <div class="stat-box"><div class="icon-sm">📦</div><div class="val" style="color:var(--accent);">${total}</div><div class="lbl">Orders</div></div>
+        <div class="stat-box"><div class="icon-sm">₹</div><div class="val" style="color:var(--green);">₹${totalPricePaid.toLocaleString('en-IN')}</div><div class="lbl">Price Paid</div></div>
+        <div class="stat-box"><div class="icon-sm">⏳</div><div class="val" style="color:var(--yellow);">${pendingForm}</div><div class="lbl">Pending Form</div></div>
+        <div class="stat-box"><div class="icon-sm">💵</div><div class="val" style="color:var(--green);">₹${totalPaidAmt.toLocaleString('en-IN')}</div><div class="lbl">Paid Amount</div></div>
+        <div class="stat-box"><div class="icon-sm">📥</div><div class="val" style="color:var(--purple);">₹${totalReceived.toLocaleString('en-IN')}</div><div class="lbl">Received</div></div>
       `;
+    }
+
+    function getStatusMessage(o) {
+      if (o.PaymentStatus === 'Paid' && o.BuyerActualGot) {
+        const payDate = o.PaymentDate ? formatDate(o.PaymentDate) : '';
+        return { type: 'success', html: `<strong>Status:</strong> Paid and Credited ₹${o.BuyerActualGot} on ${payDate}.` };
+      }
+      if (o.OrderStatus === 'Got Refund') {
+        return { type: 'success', html: `<strong>Refund received.</strong> Please check payment status. Amount: ₹${o.BuyerToget || 0}` };
+      }
+      if (o.OrderStatus === 'Refund form filled') {
+        const days = daysBetween(o.RefundFormDate, new Date());
+        return { type: 'warning', html: `<strong>Refund form submitted.</strong> Waiting for refund processing. ${days ? days + ' days since form filled.' : ''}` };
+      }
+      if (o.OrderStatus === 'Review Live') {
+        return { type: 'info', html: `<strong>Review is live.</strong> Refund form can be filled soon.` };
+      }
+      if (o.PaymentStatus === 'Pending payment' && o.OrderStatus === 'Got Refund') {
+        return { type: 'warning', html: `<strong>Refund received but payment pending.</strong> Please check with admin.` };
+      }
+      return { type: 'info', html: `<strong>Status:</strong> ${o.OrderStatus || 'Order Placed'}. ${o.OrderStatus !== 'Got Refund' ? 'Please check with mediator for updates.' : ''}` };
     }
 
     function renderOrders(orders) {
       const listEl = document.getElementById('orderList');
-      if (!orders.length) { listEl.innerHTML = '<div class="empty-state"><div class="emoji">📦</div><p>No orders yet</p></div>'; return; }
-      const today = new Date();
+      if (!orders.length) { listEl.innerHTML = '<div class="empty-state">📦 No orders found</div>'; return; }
+
       const statusOrder = ['Order Placed', 'Product Received', 'Reviewed', 'Review Live', 'Refund form filled', 'Got Refund'];
       const stepDates = ['OrderDate', 'DeliveryDate', 'ReviewDate', 'ReviewLiveDate', 'RefundFormDate', 'RefundDate'];
-      const stepLabels = ['Order Placed', 'Received', 'Reviewed', 'Review Live', 'Refund Form', 'Got Refund'];
+      const stepLabels = ['Order Placed', 'Product Received', 'Reviewed', 'Review Live', 'Refund Form Filled', 'Got Refund'];
 
-      listEl.innerHTML = orders.map(o => {
+      listEl.innerHTML = orders.map((o, idx) => {
         const currentIdx = statusOrder.indexOf(o.OrderStatus || '');
-        let daysHtml = '';
-        if (o.RefundFormDate && !o.RefundDate) { const d = daysBetween(o.RefundFormDate, today); if (d !== null) daysHtml = `<span class="badge badge-yellow"> ${d}d since form</span>`; }
-        else if (o.RefundFormDate && o.RefundDate) { const d = daysBetween(o.RefundFormDate, o.RefundDate); if (d !== null) daysHtml = `<span class="badge badge-green">✅ Refund in ${d}d</span>`; }
+        const statusMsg = getStatusMessage(o);
 
-        // Timeline steps with dates
-        const timelineHtml = stepLabels.map((label, idx) => {
-          let cls = 'pending', dot = '', dateStr = '', daysTag = '';
-          if (idx < currentIdx) { cls = 'done'; dot = '✓'; }
-          else if (idx === currentIdx && o.OrderStatus) { cls = 'active'; dot = '●'; }
-          const dateVal = o[stepDates[idx]];
-          if (dateVal) {
-            dateStr = formatDate(dateVal);
-            if (idx > 0 && o[stepDates[idx-1]]) {
-              const d = daysBetween(o[stepDates[idx-1]], dateVal);
-              if (d !== null) daysTag = `<span class="step-days done-days">${d}d</span>`;
-            }
-          } else if (idx === 4 && !o.RefundDate && o.RefundFormDate) {
-            const d = daysBetween(o.RefundFormDate, today);
-            if (d !== null) daysTag = `<span class="step-days waiting">${d}d</span>`;
+        // Timeline
+        const timelineHtml = stepLabels.map((label, i) => {
+          let cls = 'pending', dateStr = '', daysTag = '';
+          if (i < currentIdx) cls = 'done';
+          else if (i === currentIdx && o.OrderStatus) cls = 'active';
+          const dv = o[stepDates[i]];
+          if (dv) {
+            dateStr = formatDate(dv);
+            if (i > 0 && o[stepDates[i-1]]) { const d = daysBetween(o[stepDates[i-1]], dv); if (d !== null) daysTag = `<span class="t-days" style="background:rgba(22,163,74,0.1);color:var(--green);">${d}d</span>`; }
+          } else if (i === 5 && !o.RefundDate && o.RefundFormDate) {
+            const d = daysBetween(o.RefundFormDate, new Date());
+            if (d !== null) daysTag = `<span class="t-days" style="background:rgba(217,119,6,0.1);color:var(--yellow);">${d}d waiting</span>`;
           }
-          return `
-            <div class="timeline-step-row">
-              <div class="step-dot ${cls}">${dot}</div>
-              <span class="step-label ${idx === currentIdx ? 'active-label' : ''}">${label}</span>
-              <span class="step-date">${dateStr || '—'}</span>
-              ${daysTag}
-            </div>
-          `;
+          return `<div class="timeline-step"><div class="t-dot ${cls}"></div><span class="t-label">${label}</span><span class="t-date">${dateStr || '—'}</span>${daysTag}</div>`;
         }).join('');
 
         // Payment step
+        const payClass = o.PaymentStatus === 'Paid' ? 'done' : 'pending';
         const payDate = o.PaymentDate ? formatDate(o.PaymentDate) : '—';
-        const payStepClass = o.PaymentStatus === 'Paid' ? 'done' : 'pending';
 
         return `
-          <div class="order-card">
+          <div class="order-card" id="order-${idx}">
             <div class="order-header">
-              <div>
-                <h4>${o.ProductName || 'Product'}</h4>
-                <span class="order-no">#${o.OrderNo || ''} • ${o.OrderedPlatform || ''}</span>
+              <div class="order-header-left">
+                <div class="order-id">ID: ${o.PlatformOrderID || o.OrderNo || ''} <button class="copy-btn" onclick="copyText('${o.PlatformOrderID || o.OrderNo || ''}')">📋 Copy ID</button></div>
+                <div class="order-platform-product">${o.OrderedPlatform || ''} — ${(o.ProductName || '').substring(0, 40)}</div>
+              </div>
+              <div class="order-header-right">
+                <div class="order-date">Order Date: ${o.OrderDate ? formatDate(o.OrderDate) : '—'} ${daysAgo(o.OrderDate)}</div>
+                <span class="status-badge">${o.PaymentStatus === 'Paid' ? 'Paid' : o.OrderStatus || 'Pending'}</span>
               </div>
             </div>
-            <div class="order-badges">
-              ${statusBadge(o.OrderStatus)}
-              ${paymentBadge(o.PaymentStatus)}
-              ${daysHtml}
+            <div class="order-actions-bar">
+              <button class="action-btn" onclick="copyText('${o.PlatformOrderID || o.OrderNo || ''}')"> Copy Status</button>
+              <button class="action-btn primary" onclick="toggleTimeline(${idx})">📊 View Timeline</button>
             </div>
-            <div class="order-info-grid">
-              <div class="info-cell"><label>Platform</label><span>${o.OrderedPlatform || '—'}</span></div>
-              <div class="info-cell"><label>Account</label><span>${o.AccountName || '—'}</span></div>
-              <div class="info-cell"><label>Price</label><span>₹${o.PricePaid || 0}</span></div>
-              <div class="info-cell"><label>To Get</label><span style="color:var(--green);">₹${o.BuyerToget || 0}</span></div>
-              <div class="info-cell"><label>Received</label><span>₹${o.BuyerActualGot || 0}</span></div>
-              <div class="info-cell"><label>Paid</label><span style="color:${o.PaymentStatus==='Paid'?'var(--green)':'var(--yellow)'};">${o.PaymentStatus==='Paid'?'✅':'⏳'}</span></div>
-              <div class="info-cell"><label>Order Date</label><span>${formatDate(o.OrderDate)}</span></div>
-              <div class="info-cell"><label>Platform ID</label><span class="mono">${o.PlatformOrderID || '—'}</span></div>
+            <div class="status-message ${statusMsg.type}">${statusMsg.html}</div>
+            <div class="order-details-toggle" onclick="toggleDetails(${idx})">
+              <span>📋 Order Details, Status & Refund Info</span>
+              <span class="arrow" id="arrow-${idx}">▼</span>
             </div>
-            <div class="compact-timeline">
+            <div class="order-details-content" id="details-${idx}">
+              <div class="details-grid">
+                <div class="detail-item"><label>Reviewer</label><span>${session.name || '—'}</span></div>
+                <div class="detail-item"><label>Mediator</label><span>${o.MediatorName || '—'}</span></div>
+                <div class="detail-item"><label>Account</label><span>${o.AccountName || '—'}</span></div>
+                <div class="detail-item"><label>Platform</label><span>${o.OrderedPlatform || '—'}</span></div>
+                <div class="detail-item"><label>Order Amount</label><span class="amount">₹${o.PricePaid || 0}</span></div>
+                <div class="detail-item"><label>To Get</label><span style="color:var(--green);font-weight:700;">₹${o.BuyerToget || 0}</span></div>
+                <div class="detail-item"><label>Received</label><span>${o.BuyerActualGot || 0}</span></div>
+                <div class="detail-item"><label>Payment</label><span style="color:${o.PaymentStatus==='Paid'?'var(--green)':'var(--yellow)'};font-weight:600;">${o.PaymentStatus==='Paid'?'✅ Paid':'⏳ Pending'}</span></div>
+              </div>
+              <div class="detail-actions">
+                <button class="action-btn" onclick="toggleTimeline(${idx})">📊 Timeline</button>
+                ${o.OrderStatus === 'Refund form filled' || o.OrderStatus === 'Got Refund' ? '<button class="action-btn primary">📋 View Refund Form Details</button>' : ''}
+                <button class="action-btn" style="margin-left:auto;color:var(--red);border-color:rgba(220,38,38,0.2);" onclick="openQueryForOrder('${o.OrderNo}')"> Raise Query</button>
+              </div>
+            </div>
+            <div class="timeline-popup" id="timeline-${idx}">
               ${timelineHtml}
-              <div class="timeline-step-row">
-                <div class="step-dot ${payStepClass}">${o.PaymentStatus==='Paid'?'✓':''}</div>
-                <span class="step-label ${o.PaymentStatus==='Paid'?'active-label':''}">Payment</span>
-                <span class="step-date">${payDate}</span>
-                ${o.PaymentMethod ? `<span style="font-size:9px;color:var(--text3);">${o.PaymentMethod}</span>` : ''}
-              </div>
+              <div class="timeline-step"><div class="t-dot ${payClass}"></div><span class="t-label">Payment ${o.PaymentStatus==='Paid'?'Completed':'Pending'}</span><span class="t-date">${payDate}</span>${o.PaymentMethod ? `<span class="t-days" style="background:var(--accent-glow);color:var(--accent);">${o.PaymentMethod}</span>` : ''}</div>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    function filterMyOrders() {
-      const status = document.getElementById('statusFilter').value;
-      const payment = document.getElementById('paymentFilter').value;
-      let filtered = allOrders;
-      if (status) filtered = filtered.filter(o => o.OrderStatus === status);
-      if (payment) filtered = filtered.filter(o => o.PaymentStatus === payment);
-      renderOrders(filtered);
+    function toggleDetails(idx) {
+      const el = document.getElementById('details-' + idx);
+      const arrow = document.getElementById('arrow-' + idx);
+      el.classList.toggle('open');
+      arrow.parentElement.classList.toggle('open');
+    }
+
+    function toggleTimeline(idx) {
+      const el = document.getElementById('timeline-' + idx);
+      el.classList.toggle('open');
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filterType = document.getElementById('filterType').value;
+      const showOnly = document.querySelector('input[name="showOnly"]:checked').value;
+
+      filteredOrders = allOrders.filter(o => {
+        // Search filter
+        if (search) {
+          let match = false;
+          if (filterType === 'id') match = String(o.PlatformOrderID || o.OrderNo || '').toLowerCase().includes(search);
+          else if (filterType === 'product') match = (o.ProductName || '').toLowerCase().includes(search);
+          else if (filterType === 'platform') match = (o.OrderedPlatform || '').toLowerCase().includes(search);
+          if (!match) return false;
+        }
+        // Show only filter
+        if (showOnly === 'all') return true;
+        if (showOnly === 'Paid') return o.PaymentStatus === 'Paid';
+        if (showOnly === 'Pending payment') return o.PaymentStatus === 'Pending payment';
+        return o.OrderStatus === showOnly;
+      });
+
+      renderOrders(filteredOrders);
     }
 
     function populateQueryOrders(orders) {
       const sel = document.getElementById('queryOrder');
-      sel.innerHTML = '<option value="">-- Select order --</option>' + orders.map(o => `<option value="${o.OrderNo}">#${o.OrderNo} - ${o.ProductName || 'Product'}</option>`).join('');
+      sel.innerHTML = '<option value="">-- Select order --</option>' + orders.map(o => `<option value="${o.OrderNo}">#${o.OrderNo} - ${(o.ProductName||'').substring(0,30)}</option>`).join('');
+    }
+
+    function openQueryForOrder(orderNo) {
+      document.getElementById('queryOrder').value = orderNo;
+      switchSection('query');
     }
 
     async function submitBuyerOrder() {
@@ -391,21 +548,19 @@
       const notes = document.getElementById('newNotes').value.trim();
       if (!platform || !account || !product || !platformId || !price || !date) { showToast('Fill all required fields', 'warning'); return; }
       let screenshotUrl = '';
-      const fileInput = document.getElementById('newScreenshot');
-      if (fileInput.files && fileInput.files[0]) {
-        try { const base64 = await compressImage(fileInput.files[0]); const ur = await apiCall('uploadImage', { imageBase64: base64, fileName: 'order_' + Date.now() + '.jpg' }); if (ur.success) screenshotUrl = ur.fileUrl; } catch (e) {}
-      }
+      const fi = document.getElementById('newScreenshot');
+      if (fi.files && fi.files[0]) { try { const b = await compressImage(fi.files[0]); const u = await apiCall('uploadImage', { imageBase64: b, fileName: 'order_' + Date.now() + '.jpg' }); if (u.success) screenshotUrl = u.fileUrl; } catch (e) {} }
       try {
         const r = await apiCall('addOrderBuyer', { OrderedPlatform: platform, AccountName: account, ProductName: product, PlatformOrderID: platformId, PricePaid: price, OrderDate: date, Notes: notes, UserID: session.userid, OrderScreenshot: screenshotUrl });
-        if (r.success) { showToast('Order #' + r.orderNo + ' submitted!', 'success'); document.getElementById('newProduct').value=''; document.getElementById('newPlatformId').value=''; document.getElementById('newPrice').value=''; document.getElementById('newNotes').value=''; document.getElementById('imgPreview').innerHTML=''; loadMyOrders(); switchSection('orders'); }
+        if (r.success) { showToast('Order #' + r.orderNo + ' submitted!', 'success'); ['newProduct','newPlatformId','newPrice','newNotes'].forEach(id => document.getElementById(id).value=''); document.getElementById('imgPreview').innerHTML=''; loadMyOrders(); switchSection('orders'); }
         else showToast(r.error || 'Failed', 'error');
       } catch (e) { showToast('Error', 'error'); }
     }
 
     function previewImage(input) {
-      const preview = document.getElementById('imgPreview');
-      if (input.files && input.files[0]) { const r = new FileReader(); r.onload = e => { preview.innerHTML = `<img src="${e.target.result}" style="max-width:150px;border-radius:6px;border:1px solid var(--border);">`; }; r.readAsDataURL(input.files[0]); }
-      else preview.innerHTML = '';
+      const p = document.getElementById('imgPreview');
+      if (input.files && input.files[0]) { const r = new FileReader(); r.onload = e => { p.innerHTML = `<img src="${e.target.result}" style="max-width:150px;border-radius:6px;border:1px solid var(--border);">`; }; r.readAsDataURL(input.files[0]); }
+      else p.innerHTML = '';
     }
 
     async function submitQuery() {
@@ -423,30 +578,34 @@
     async function loadDeals() {
       try {
         const r = await apiCall('getDeals');
-        const grid = document.getElementById('dealsGrid');
+        const g = document.getElementById('dealsGrid');
         if (r.success && r.deals.length) {
-          grid.innerHTML = r.deals.map(d => `
+          g.innerHTML = r.deals.map(d => `
             <div class="deal-card">
-              <div class="deal-img">${d.imageUrl ? `<img src="${d.imageUrl}" onerror="this.parentElement.innerHTML=''">` : '📦'}</div>
+              <div class="deal-img">${d.imageUrl ? `<img src="${d.imageUrl}" onerror="this.parentElement.innerHTML='📦'">` : '📦'}</div>
               <div class="deal-body">
-                <span style="font-size:9px;font-weight:600;color:var(--accent);background:rgba(59,130,246,0.1);padding:2px 6px;border-radius:8px;">${d.platform||''}</span>
+                <span style="font-size:9px;font-weight:600;color:var(--accent);background:var(--accent-glow);padding:2px 6px;border-radius:6px;">${d.platform||''}</span>
                 <h4>${d.title||''}</h4>
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
                   <span style="font-size:15px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--green);">₹${d.price||0}</span>
-                  ${d.lessAmount ? `<span style="font-size:10px;color:var(--green);background:rgba(16,185,129,0.1);padding:2px 5px;border-radius:4px;">Save ₹${d.lessAmount}</span>` : ''}
+                  ${d.lessAmount ? `<span style="font-size:10px;color:var(--green);background:rgba(22,163,74,0.1);padding:2px 5px;border-radius:4px;">Save ₹${d.lessAmount}</span>` : ''}
                 </div>
                 ${d.productUrl ? `<a href="${d.productUrl}" target="_blank" style="display:block;text-align:center;padding:7px;background:var(--accent);color:white;border-radius:6px;font-size:11px;font-weight:600;">View Deal</a>` : ''}
-                <button onclick="requestDeal('${d.dealId}','${(d.title||'').replace(/'/g,'')}')" style="display:block;text-align:center;padding:7px;background:var(--green);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;margin-top:4px;width:100%;">Request</button>
+                <button onclick="requestDeal('${d.dealId}','${(d.title||'').replace(/'/g,'')}')" style="display:block;text-align:center;padding:7px;background:var(--green);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;margin-top:4px;width:100%;">Request Deal</button>
               </div>
             </div>
           `).join('');
-        } else { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="emoji">🔍</div><p>No deals</p></div>'; }
-      } catch (e) { document.getElementById('dealsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="emoji">❌</div><p>Error</p></div>'; }
+        } else { g.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">🔍 No deals</div>'; }
+      } catch (e) { document.getElementById('dealsGrid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;">❌ Error</div>'; }
     }
 
     async function requestDeal(dealId, dealTitle) {
       try { await apiCall('requestDeal', { buyerName: session.name, buyerMobile: session.mobile, dealTitle, dealId }); showToast('Deal request sent!', 'success'); }
       catch (e) { showToast('Request sent!', 'success'); }
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied: ' + text, 'success'));
     }
 
     document.getElementById('newDate').valueAsDate = new Date();
