@@ -10,7 +10,7 @@
   <style>
     :root {
       --bg: #f5f7fa; --surface: #ffffff; --surface2: #f0f2f5; --surface3: #e8eaed;
-      --accent: #2563eb; --accent-hover: #1d4ed8; --accent-glow: rgba(37,99,235,0.08);
+      --accent: #1d4ed8; --accent-hover: #1e3a8a; --accent-glow: rgba(29,78,216,0.1);
       --green: #16a34a; --yellow: #d97706; --red: #dc2626; --purple: #7c3aed;
       --pink: #db2777; --cyan: #0891b2; --orange: #ea580c;
       --text: #1e293b; --text2: #475569; --text3: #94a3b8;
@@ -19,7 +19,7 @@
     }
     [data-theme="dark"] {
       --bg: #0f172a; --surface: #1e293b; --surface2: #273549; --surface3: #334155;
-      --accent: #3b82f6; --accent-hover: #2563eb; --accent-glow: rgba(59,130,246,0.1);
+      --accent: #60a5fa; --accent-hover: #3b82f6; --accent-glow: rgba(96,165,250,0.12);
       --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
       --border: #334155; --border2: #475569; --card-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
@@ -77,8 +77,11 @@
     .order-header { background: var(--accent); color: white; padding: 10px 14px; display: flex; justify-content: space-between; align-items: flex-start; }
     .order-header-left { flex: 1; }
     .order-id { font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 6px; }
-    .copy-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 8px; font-size: 10px; cursor: pointer; color: white; }
-    .order-platform-product { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+    .copy-icon-sm { background: rgba(255,255,255,0.2); border: none; border-radius: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; color: white; flex-shrink: 0; }
+    .copy-icon-sm:hover { background: rgba(255,255,255,0.35); }
+    .order-product-full { font-size: 11px; opacity: 0.9; margin-top: 3px; line-height: 1.3; max-width: 100%; overflow: visible; white-space: normal; }
+    .order-product-full:hover { opacity: 1; }
+    .order-meta-line { font-size: 10px; opacity: 0.75; margin-top: 2px; }
     .order-header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
     .order-date { font-size: 10px; opacity: 0.8; }
     .status-badge { padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); }
@@ -206,6 +209,7 @@
             <option value="product">Product</option>
             <option value="platform">Platform</option>
             <option value="buyer">Buyer</option>
+            <option value="mediator">Mediator</option>
           </select>
           <input type="text" id="searchInput" placeholder="Search orders..." oninput="searchOrders()">
           <button onclick="searchOrders()">🔍</button>
@@ -289,11 +293,15 @@
       <div class="card">
         <h3>💰 Recent Payments</h3>
         <div class="filter-search" style="margin-bottom:10px;">
+          <select id="payDateType" onchange="searchPayments()" style="width:120px;">
+            <option value="payment">Payment Date</option>
+            <option value="refund">Refund Date</option>
+          </select>
           <input type="date" id="payDateFrom" onchange="searchPayments()">
           <input type="date" id="payDateTo" onchange="searchPayments()">
           <input type="number" id="payAmount" placeholder="Amount..." onchange="searchPayments()" style="width:120px;">
         </div>
-        <div class="table-wrapper"><table><thead><tr><th>#</th><th>Product</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
+        <div class="table-wrapper"><table><thead><tr><th>#</th><th>Product</th><th>Amount</th><th>Method</th><th>Pay Date</th><th>Refund Date</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
       </div>
     </div>
 
@@ -323,8 +331,12 @@
       <div class="card"><h3>🤝 Add Mediator</h3>
         <div class="form-grid">
           <div class="form-group"><label>Name</label><input type="text" id="medName"></div>
-          <div class="form-group"><label>Contact</label><input type="text" id="medContact"></div>
+          <div class="form-group"><label>Contact</label><input type="text" id="medContact" oninput="autoWhatsApp()"></div>
           <div class="form-group"><label>WhatsApp</label><input type="text" id="medWhatsapp"></div>
+          <div class="form-group" style="display:flex;align-items:center;gap:6px;padding-top:20px;">
+            <input type="checkbox" id="medWaCheckbox" onchange="toggleWhatsAppAuto()" style="width:16px;height:16px;accent-color:var(--accent);">
+            <label for="medWaCheckbox" style="font-size:11px;color:var(--text2);cursor:pointer;margin:0;">Auto-fill WhatsApp (91 + Contact)</label>
+          </div>
         </div>
         <button class="btn btn-primary" onclick="addMediator()">Add</button>
       </div>
@@ -398,7 +410,7 @@
     }
     function onParentChange() { const p=document.getElementById('admParentUser').value; const s=document.getElementById('admAccount'); if(!p){s.innerHTML='<option value="">Select Parent first</option>';return;} s.innerHTML='<option value="">Select</option>'+(dropdownData.accounts||[]).filter(a=>a.parentId===p).map(a=>`<option value="${a.name}">${a.name}</option>`).join(''); }
     function onAccountChange() { const n=document.getElementById('admAccount').value; const f=(dropdownData.accounts||[]).find(a=>a.name===n); document.getElementById('admUserId').value=f?(f.userId||''):''; }
-    function calcToGet() { document.getElementById('admToGet').value=document.getElementById('admLess').value||0; }
+    function calcToGet() { const p=parseFloat(document.getElementById('admPrice').value)||0; const l=parseFloat(document.getElementById('admLess').value)||0; document.getElementById('admToGet').value=Math.max(0,p-l); }
     async function loadNextOrderNo() { try { const r=await apiCall('getNextOrderNo'); if(r.success) document.getElementById('admOrderNo').value=r.nextOrderNo; } catch(e){} }
 
     async function loadStats() {
@@ -448,6 +460,7 @@
           if (filterType==='product') return (o.tracking?.ProductName||'').toLowerCase().includes(query);
           if (filterType==='platform') return (o.tracking?.OrderedPlatform||'').toLowerCase().includes(query);
           if (filterType==='buyer') return (o.tracking?.UserID||'').toLowerCase().includes(query);
+          if (filterType==='mediator') return (o.tracking?.MediatorName||'').toLowerCase().includes(query);
           return JSON.stringify(o).toLowerCase().includes(query);
         });
       }
@@ -494,12 +507,14 @@
           <div class="order-card" id="order-${idx}">
             <div class="order-header">
               <div class="order-header-left">
-                <div class="order-id">ID: ${t.PlatformOrderID||o.OrderNo||''} <button class="copy-btn" onclick="copyText('${t.PlatformOrderID||o.OrderNo||''}')">📋 Copy ID</button></div>
-                <div class="order-platform-product">${t.OrderedPlatform||''} — ${(t.ProductName||'').substring(0,40)} | ₹${t.PricePaid||0}</div>
+                <div class="order-id">ID: ${t.PlatformOrderID||o.OrderNo||''} <button class="copy-icon-sm" onclick="copyText('${t.PlatformOrderID||o.OrderNo||''}')" title="Copy ID">📋</button></div>
+                <div class="order-product-full" title="${t.ProductName||''}">${t.ProductName||'Product'}</div>
+                <div class="order-meta-line">${t.OrderedPlatform||''} | ${t.AccountName||''} | Mediator: ${t.MediatorName||'—'} | ₹${t.PricePaid||0}</div>
               </div>
               <div class="order-header-right">
-                <div class="order-date">Order Date: ${t.OrderDate?formatDate(t.OrderDate):'—'} ${daysAgo(t.OrderDate)}</div>
-                <span class="status-badge">${t.PaymentStatus==='Paid'?'Paid & Credited':t.OrderStatus||'Pending'} ${daysHtml}</span>
+                <div class="order-date">${t.OrderDate?formatDate(t.OrderDate):'—'} ${daysAgo(t.OrderDate)}</div>
+                <span class="status-badge">${t.PaymentStatus==='Paid'?'✅ Paid':t.OrderStatus||'Pending'} ${daysHtml}</span>
+                ${t.PaymentStatus==='Paid'?`<div style="font-size:15px;font-weight:800;color:#ff4444;text-shadow:0 0 8px rgba(255,68,68,0.3);">₹${t.BuyerActualGot||t.ActualGot||0}</div>`:''}
               </div>
             </div>
             <div class="order-actions-bar">
@@ -616,7 +631,7 @@
     }
 
     async function searchPayments() {
-      try { const r=await apiCall('getRecentPayments',{dateFrom:document.getElementById('payDateFrom').value,dateTo:document.getElementById('payDateTo').value,amount:document.getElementById('payAmount').value}); if(r.success) { document.getElementById('paymentsBody').innerHTML=(r.payments||[]).map(p=>`<tr><td style="font-weight:600;color:var(--accent);">${p.OrderNo}</td><td>${p.ProductName}</td><td style="font-weight:700;color:var(--green);">₹${p.BuyerActualGot||p.ActualGot||0}</td><td>${p.PaymentMethod||'—'}</td><td>${formatDate(p.PaymentDate)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--text3);">No payments</td></tr>'; } } catch(e){}
+      try { const r=await apiCall('getRecentPayments',{dateFrom:document.getElementById('payDateFrom').value,dateTo:document.getElementById('payDateTo').value,amount:document.getElementById('payAmount').value,dateType:document.getElementById('payDateType').value}); if(r.success) { document.getElementById('paymentsBody').innerHTML=(r.payments||[]).map(p=>`<tr><td style="font-weight:600;color:var(--accent);">${p.OrderNo}</td><td title="${p.ProductName}">${(p.ProductName||'').substring(0,25)}${(p.ProductName||'').length>25?'...':''}</td><td style="font-weight:700;color:var(--red);">${p.BuyerActualGot||p.ActualGot||0}</td><td>${p.PaymentMethod||'—'}</td><td>${p._paymentDate?formatDate(p._paymentDate):'—'}</td><td>${p._refundDate?formatDate(p._refundDate):'—'}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text3);">No payments</td></tr>'; } } catch(e){}
     }
 
     // Fetch + Tracking Edit
@@ -680,14 +695,51 @@
     function clearAdminForm() { ['admProduct','admSeller','admLink','admPlatformId','admPrice','admLess','admToGet','admBuyerLess','admNotes','admMedForm','admRefundForm'].forEach(id=>document.getElementById(id).value=''); document.getElementById('adminImgPreview').innerHTML=''; document.getElementById('admScreenshot').value=''; document.getElementById('fetchedInfo').style.display='none'; document.getElementById('trackingEditSection').classList.add('hidden'); loadNextOrderNo(); }
     function previewAdminImage(input) { const p=document.getElementById('adminImgPreview'); if(input.files&&input.files[0]){const r=new FileReader();r.onload=e=>{p.innerHTML=`<img src="${e.target.result}" style="max-width:150px;border-radius:6px;border:1px solid var(--border);">`;};r.readAsDataURL(input.files[0]);} else p.innerHTML=''; }
 
-    async function populateOrderSelects() { try { const r=await apiCall('getOrders'); if(r.success){const opts=(r.orders||[]).map(o=>`<option value="${o.OrderNo}">#${o.OrderNo} - ${(o.ProductName||'').substring(0,30)}</option>`).join(''); document.getElementById('waOrderSelect').innerHTML='<option value="">-- Select --</option>'+opts; document.getElementById('emailOrderSelect').innerHTML='<option value="">-- Select --</option>'+opts;} } catch(e){} }
+    async function populateOrderSelects() { try { const r=await apiCall('getOrders'); if(r.success){const opts=(r.orders||[]).sort((a,b)=>(b.OrderNo||0)-(a.OrderNo||0)).map(o=>`<option value="${o.OrderNo}">#${o.OrderNo} - ${(o.ProductName||'').substring(0,30)}</option>`).join(''); document.getElementById('waOrderSelect').innerHTML='<option value="">-- Select --</option>'+opts; document.getElementById('emailOrderSelect').innerHTML='<option value="">-- Select --</option>'+opts;} } catch(e){} }
     async function fillWAOrder() { const no=document.getElementById('waOrderSelect').value; if(!no)return; try { const r=await apiCall('getOrderByPlatformID',{platformOrderId:no}); if(r.success&&r.order){const o=r.order,t=o.tracking||{}; document.getElementById('waMessage').value=`Order #${o.OrderNo}\nDate: ${o.OrderDate}\n${o.OrderedPlatform} | ${o.AccountName}\n${o.ProductName}\nID: ${o.PlatformOrderID}\n₹${o.PricePaid} | Less: ₹${o.BuyerLess||0}\n${t.OrderStatus||'Order Placed'}\n${t.PaymentStatus||'Pending'}`;} } catch(e){} }
     async function sendWA() { const n=document.getElementById('waNumber').value.trim(),m=document.getElementById('waMessage').value.trim(); if(!n||!m){showToast('Fill fields','warning');return;} try { const r=await apiCall('sendWhatsApp',{to:n,message:m}); if(r.success)showToast('Sent!','success'); else showToast(r.error||'Failed','error'); } catch(e){showToast('Error','error');} }
-    async function fillEmailOrder() { const no=document.getElementById('emailOrderSelect').value; if(!no)return; try { const r=await apiCall('getOrderByPlatformID',{platformOrderId:no}); if(r.success&&r.order){const o=r.order; document.getElementById('emailSubject').value='SastaDeal - Order #'+o.OrderNo; document.getElementById('emailBody').value=`Order #${o.OrderNo}\nDate: ${o.OrderDate}\nPlatform: ${o.OrderedPlatform}\nProduct: ${o.ProductName}\nPrice: ₹${o.PricePaid}\nBuyerLess: ₹${o.BuyerLess||0}\nStatus: ${o.tracking?.OrderStatus||'N/A'}\nPayment: ${o.tracking?.PaymentStatus||'Pending'}`;} } catch(e){} }
+    async function fillEmailOrder() { const no=document.getElementById('emailOrderSelect').value; if(!no)return; try { const r=await apiCall('getOrderByPlatformID',{platformOrderId:no}); if(r.success&&r.order){const o=r.order,t=o.tracking||{}; document.getElementById('emailSubject').value='SastaDeal - Order #'+o.OrderNo; document.getElementById('emailBody').value=`Order ID: ${o.PlatformOrderID}
+Order No: #${o.OrderNo}
+Date: ${o.OrderDate}
+Platform: ${o.OrderedPlatform}
+Account: ${o.AccountName}
+Product: ${o.ProductName}
+Seller: ${o.SellerName||'N/A'}
+Product Link: ${o.ProductLink||'N/A'}
+Price Paid: ₹${o.PricePaid}
+Less: ₹${o.Less||0}
+To Get: ₹${t.ToGet||o.Less||0}
+Buyer Less: ₹${o.BuyerLess||0}
+Buyer To Get: ₹${t.BuyerToget||0}
+Actual Got: ₹${t.ActualGot||0}
+Buyer Actual Got: ₹${t.BuyerActualGot||0}
+Mediator: ${o.MediatorName||'N/A'}
+Deal Contact: ${o.DealContactNo||'N/A'}
+For Whom: ${o.ForWhom||'N/A'}
+UserID: ${o.UserID||'N/A'}
+
+Order Status: ${t.OrderStatus||'N/A'}
+Payment Status: ${t.PaymentStatus||'N/A'}
+Payment Method: ${t.PaymentMethod||'N/A'}
+Payment Date: ${t.PaymentDate||'N/A'}
+
+Order Date: ${t.OrderDate||o.OrderDate||'N/A'}
+Delivery Date: ${t.DeliveryDate||'N/A'}
+Review Date: ${t.ReviewDate||'N/A'}
+Review Live Date: ${t.ReviewLiveDate||'N/A'}
+Refund Form Date: ${t.RefundFormDate||'N/A'}
+Refund Date: ${t.RefundDate||'N/A'}
+Review Link: ${t.ReviewLink||'N/A'}
+
+Notes: ${o.Notes||t.Notes||'N/A'}
+Mediator Order Form: ${o.MediatorOrderForm||'N/A'}
+Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
     async function sendEmailManual() { const to=document.getElementById('emailTo').value.trim(),sub=document.getElementById('emailSubject').value.trim(),body=document.getElementById('emailBody').value.trim(),on=document.getElementById('emailOrderSelect').value; if(!to||!sub||!body){showToast('Fill fields','warning');return;} try { const r=await apiCall('sendManualEmail',{to,subject:sub,body,orderNo:on}); if(r.success)showToast('Sent!','success'); else showToast(r.error||'Failed','error'); } catch(e){showToast('Error','error');} }
 
     async function loadMediators() { try { const r=await apiCall('getMediators'); if(r.success){document.getElementById('mediatorsBody').innerHTML=(r.mediators||[]).map(m=>`<tr><td>${m.name}</td><td>${m.contact}</td><td>${m.whatsapp}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--text3);">None</td></tr>';} } catch(e){} }
-    async function addMediator() { const n=document.getElementById('medName').value.trim(),c=document.getElementById('medContact').value.trim(); if(!n||!c){showToast('Fill name & contact','warning');return;} try { const r=await apiCall('addMediator',{name:n,contact:c,whatsapp:document.getElementById('medWhatsapp').value.trim()}); if(r.success){showToast('Added!','success'); ['medName','medContact','medWhatsapp'].forEach(id=>document.getElementById(id).value=''); loadMediators(); refreshDropdowns();} } catch(e){showToast('Error','error');} }
+    function toggleWhatsAppAuto() { const cb=document.getElementById('medWaCheckbox'); const contact=document.getElementById('medContact').value.trim(); if(cb.checked&&contact){const digits=contact.replace(/[^0-9]/g,''); document.getElementById('medWhatsapp').value=digits.startsWith('91')?digits:'91'+digits;} }
+    function autoWhatsApp() { if(document.getElementById('medWaCheckbox').checked){const c=document.getElementById('medContact').value.trim(); const d=c.replace(/[^0-9]/g,''); document.getElementById('medWhatsapp').value=d.startsWith('91')?d:'91'+d;} }
+    async function addMediator() { const n=document.getElementById('medName').value.trim(),c=document.getElementById('medContact').value.trim(); if(!n||!c){showToast('Fill name & contact','warning');return;} let wa=document.getElementById('medWhatsapp').value.trim(); if(!wa){const d=c.replace(/[^0-9]/g,''); wa=d.startsWith('91')?d:'91'+d;} try { const r=await apiCall('addMediator',{name:n,contact:c,whatsapp:wa}); if(r.success){showToast('Added!','success'); ['medName','medContact','medWhatsapp'].forEach(id=>document.getElementById(id).value=''); document.getElementById('medWaCheckbox').checked=false; loadMediators(); refreshDropdowns();} } catch(e){showToast('Error','error');} }
     async function loadBuyers() { try { const r=await apiCall('getBuyers'); if(r.success){document.getElementById('buyersBody').innerHTML=(r.buyers||[]).map(b=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${b.userId}</td><td>${b.name}</td><td>${b.mobile}</td><td>${b.email||'—'}</td><td>${b.parentId||'—'}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--text3);">None</td></tr>';} } catch(e){} }
     async function addBuyerAccount() { const n=document.getElementById('buyerName').value.trim(),m=document.getElementById('buyerMobile').value.trim(); if(!n||!m){showToast('Fill name & mobile','warning');return;} try { const r=await apiCall('addBuyer',{name:n,mobile:m,email:document.getElementById('buyerEmail').value.trim(),password:document.getElementById('buyerPassword').value.trim(),parentId:document.getElementById('buyerParent').value}); if(r.success){showToast('Added!','success'); ['buyerName','buyerMobile','buyerEmail','buyerPassword'].forEach(id=>document.getElementById(id).value=''); loadBuyers(); refreshDropdowns();} } catch(e){showToast('Error','error');} }
     function saveSettings() { localStorage.setItem('sastadeal_admin_wa',document.getElementById('settingsWA').value.trim()); localStorage.setItem('sastadeal_admin_email',document.getElementById('settingsEmail').value.trim()); showToast('Saved!','success'); }
