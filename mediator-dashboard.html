@@ -1,242 +1,367 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mediator Panel — SastaDeal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="_config.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #070b14; --surface: #0d1526; --surface2: #111d35; --surface3: #162040;
-      --accent: #3b82f6; --accent-hover: #2563eb; --accent-glow: rgba(59,130,246,0.15);
-      --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
-      --pink: #ec4899; --cyan: #06b6d4; --orange: #f97316;
-      --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
-      --border: rgba(59,130,246,0.12); --radius: 16px; --radius-sm: 10px;
+      --bg: #f5f7fa; --surface: #ffffff; --surface2: #f0f2f5; --surface3: #e8eaed;
+      --accent: #1d4ed8; --accent-hover: #1e40af; --accent-glow: rgba(29,78,216,0.1);
+      --green: #16a34a; --yellow: #d97706; --red: #dc2626; --purple: #7c3aed;
+      --text: #1e293b; --text2: #475569; --text3: #94a3b8;
+      --border: #e2e8f0; --border2: #cbd5e1; --radius: 12px; --radius-sm: 8px; --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
+    [data-theme="dark"] {
+      --bg: #0f172a; --surface: #1e293b; --surface2: #273549; --surface3: #334155;
+      --accent: #60a5fa; --accent-hover: #3b82f6; --accent-glow: rgba(96,165,250,0.12);
+      --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+      --border: #334155; --border2: #475569; --card-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
     a { text-decoration: none; color: inherit; }
 
-    .navbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-      background: rgba(7,11,20,0.92); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border); padding: 0 20px; height: 64px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-brand {
-      display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800;
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .nav-brand .icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; -webkit-text-fill-color: white; }
-    .nav-right { display: flex; align-items: center; gap: 12px; }
-    .nav-user { font-size: 13px; color: var(--text2); }
-    .nav-user strong { color: var(--text); }
-    .btn-logout {
-      padding: 7px 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
-      border-radius: 8px; color: var(--red); font-size: 12px; font-weight: 600; cursor: pointer;
-    }
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--card-shadow); }
+    .nav-brand { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-brand .icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; -webkit-text-fill-color: white; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .theme-toggle { width: 40px; height: 22px; border-radius: 11px; background: var(--surface2); border: 1px solid var(--border); position: relative; cursor: pointer; }
+    .theme-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); transition: transform 0.3s; }
+    [data-theme="dark"] .theme-toggle::after { transform: translateX(18px); }
+    .btn-logout { padding: 6px 14px; background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.15); border-radius: 6px; color: var(--red); font-size: 11px; font-weight: 600; cursor: pointer; }
 
-    .main-content { padding-top: 84px; padding-bottom: 40px; max-width: 1000px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
+    .main-content { padding-top: 68px; padding-bottom: 30px; max-width: 1000px; margin: 0 auto; padding-left: 12px; padding-right: 12px; }
 
-    .stats-row {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px; margin-bottom: 24px;
-    }
-    .stat-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 18px; text-align: center;
-    }
-    .stat-box .val { font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
-    .stat-box .lbl { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+    /* Tabs */
+    .dash-tabs { display: flex; gap: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 3px; margin-bottom: 14px; }
+    .dash-tab { flex: 1; padding: 8px 6px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; border: none; background: transparent; color: var(--text3); }
+    .dash-tab.active { background: var(--accent); color: white; }
 
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
-    }
-    .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+    /* KPI */
+    .kpi-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; flex: 1; min-width: 80px; text-align: center; }
+    .kpi .v { font-size: 15px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+    .kpi .l { font-size: 8px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
 
+    /* Loading */
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center; }
+    .loading-overlay.show { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Card View */
+    .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); margin-bottom: 8px; }
+    .order-header { background: linear-gradient(135deg, #1e3a5f, #2563eb); color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .order-header-left { flex: 1; }
+    .order-id { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .order-product { font-size: 11px; opacity: 0.9; margin-top: 2px; }
+    .order-header-right { text-align: right; }
+    .order-date { font-size: 10px; opacity: 0.8; }
+    .status-badge { padding: 2px 8px; border-radius: 6px; font-size: 9px; font-weight: 700; background: rgba(255,255,255,0.2); }
+
+    .order-info { padding: 8px 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; }
+    .info-cell label { font-size: 9px; color: var(--text3); font-weight: 600; text-transform: uppercase; display: block; }
+    .info-cell span { font-size: 12px; font-weight: 600; }
+
+    /* Table View */
+    .table-view { display: none; }
+    .table-view.show { display: block; }
+    .card-view { display: block; }
+    .card-view.hide { display: none; }
     .table-wrapper { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th { background: var(--surface2); padding: 10px 12px; text-align: left; font-weight: 600; color: var(--text2); font-size: 11px; text-transform: uppercase; white-space: nowrap; border-bottom: 1px solid var(--border); }
-    td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th { background: var(--surface2); padding: 7px 8px; text-align: left; font-weight: 600; color: var(--text2); font-size: 10px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 
-    .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-    .filter-row select {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 9px 14px; color: var(--text); font-size: 13px; outline: none; font-family: 'Inter', sans-serif;
-    }
+    /* Filters */
+    .filter-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+    .filter-row select { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 10px; color: var(--text); font-size: 12px; outline: none; font-family: 'Inter', sans-serif; }
+    .view-toggle { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--accent); color: white; margin-left: auto; }
+    .export-btn { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--green); color: white; }
 
-    .empty-state { text-align: center; padding: 40px; color: var(--text3); }
-    .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; box-shadow: var(--card-shadow); }
+    .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
 
-    .days-badge {
-      display: inline-block; padding: 2px 7px; border-radius: 8px;
-      font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
-    }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; outline: none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .btn-submit { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; }
 
-    @media (max-width: 768px) {
-      .nav-user { display: none; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .hidden { display: none !important; }
+    .empty-state { text-align: center; padding: 30px; color: var(--text3); }
+
+    /* Highlights */
+    .highlight-banner { background: linear-gradient(135deg, var(--accent), var(--purple)); color: white; padding: 12px 16px; border-radius: var(--radius); margin-bottom: 14px; display: none; }
+    .highlight-banner.show { display: block; }
+    .highlight-banner h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .highlight-banner p { font-size: 12px; opacity: 0.9; }
+    .highlight-banner .hl-date { font-size: 10px; opacity: 0.7; margin-top: 4px; }
+
+    @media (max-width: 600px) {
+      .kpi-bar { flex-wrap: wrap; }
+      .kpi { min-width: 70px; }
     }
   </style>
 </head>
 <body>
+  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
   <nav class="navbar">
-    <a href="index.html" class="nav-brand"><span class="icon">🤝</span> SastaDeal</a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="index.html" class="nav-brand"><span class="icon">🤝</span> SastaDeal</a>
+    </div>
     <div class="nav-right">
-      <span class="nav-user">Hi, <strong id="userName">Mediator</strong></span>
+      <span style="font-size:11px;color:var(--text2);" id="userName">Mediator</span>
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></div>
       <button class="btn-logout" onclick="logout()">Logout</button>
     </div>
   </nav>
 
   <div class="main-content">
-    <div style="margin-bottom:20px;">
-      <h2 style="font-size:20px;font-weight:800;">🤝 Mediator Dashboard</h2>
-      <p style="color:var(--text3);font-size:13px;">Track orders you've given to admin</p>
+    <!-- Highlights Banner -->
+    <div class="highlight-banner" id="highlightBanner">
+      <h4 id="highlightTitle">📢 Announcement</h4>
+      <p id="highlightText"></p>
+      <div class="hl-date" id="highlightDate"></div>
     </div>
 
-    <div class="stats-row" id="medStats"></div>
+    <!-- Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab active" onclick="switchSection('orders')" id="sec-orders">📦 Orders</button>
+      <button class="dash-tab" onclick="switchSection('query')" id="sec-query">❓ Query</button>
+    </div>
 
-    <div class="card">
-      <h3>📋 My Orders</h3>
-      <div class="filter-row">
-        <select id="statusFilter" onchange="filterOrders()">
-          <option value="">All Status</option>
-          <option value="Order Placed">Order Placed</option>
-          <option value="Product Received">Product Received</option>
-          <option value="Reviewed">Reviewed</option>
-          <option value="Review Live">Review Live</option>
-          <option value="Refund form filled">Refund Form Filled</option>
-          <option value="Got Refund">Got Refund</option>
-        </select>
-        <select id="refundFilter" onchange="filterOrders()">
-          <option value="">All Refunds</option>
-          <option value="pending">Pending Refund</option>
-          <option value="done">Refunded</option>
-        </select>
-        <button onclick="exportMediatorData('csv')" style="padding:7px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;"> Export CSV</button>
-        <button onclick="exportMediatorData('xls')" style="padding:7px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;"> Export XLS</button>
+    <!-- Orders Section -->
+    <div id="ordersSection">
+      <div class="kpi-bar" id="medStats"></div>
+
+      <div class="card" style="padding:10px 12px;">
+        <div class="filter-row">
+          <select id="statusFilter" onchange="filterOrders()">
+            <option value="">All Status</option>
+            <option value="Order Placed">Order Placed</option>
+            <option value="Product Received">Received</option>
+            <option value="Reviewed">Reviewed</option>
+            <option value="Review Live">Review Live</option>
+            <option value="Refund form filled">Refund Form</option>
+            <option value="Got Refund">Got Refund</option>
+          </select>
+          <select id="refundFilter" onchange="filterOrders()">
+            <option value="">All Refunds</option>
+            <option value="pending">Pending Refund</option>
+            <option value="done">Refunded</option>
+          </select>
+          <button class="view-toggle" onclick="toggleView()" id="viewToggleBtn"> Table View</button>
+          <button class="export-btn" onclick="exportMediatorData('csv')">📥 CSV</button>
+          <button class="export-btn" style="background:var(--accent);" onclick="exportMediatorData('xls')"> XLS</button>
+        </div>
       </div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>Platform</th><th>Product</th><th>Price</th>
-              <th>Less</th><th>Status</th><th>Refund</th><th>Days</th>
-            </tr>
-          </thead>
-          <tbody id="ordersBody"></tbody>
-        </table>
+
+      <!-- Card View -->
+      <div class="card-view" id="cardView"></div>
+
+      <!-- Table View -->
+      <div class="table-view" id="tableView">
+        <div class="card">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>#</th><th>Platform</th><th>Product</th><th>Price</th><th>Less</th><th>Status</th><th>Refund</th><th>Days</th></tr></thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div id="emptyState" class="empty-state hidden">
-        <div class="emoji">📦</div>
-        <h3>No orders found</h3>
+      <div id="emptyState" class="empty-state hidden"><div style="font-size:32px;margin-bottom:8px;">📦</div><p>No orders found</p></div>
+    </div>
+
+    <!-- Query Section -->
+    <div id="querySection" class="hidden">
+      <div class="card">
+        <h3>❓ Raise Query to Admin</h3>
+        <div class="form-group"><label>Select Order (optional)</label><select id="queryOrder"><option value="">-- Select order --</option></select></div>
+        <div class="form-group"><label>Subject</label><input type="text" id="querySubject" placeholder="Query subject"></div>
+        <div class="form-group"><label>Message</label><textarea id="queryMessage" rows="4" placeholder="Describe your query..."></textarea></div>
+        <button class="btn-submit" onclick="submitQuery()">Send Query to Admin →</button>
       </div>
     </div>
   </div>
 
   <script>
     if (!isLoggedIn() || !isMediator()) window.location.href = 'login.html';
-
     const session = getSession();
     document.getElementById('userName').textContent = session.name || 'Mediator';
 
-    let allOrders = [];
+    let allOrders = [], filteredOrders = [], currentView = 'card';
+    let highlights = [];
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('sastadeal_theme', next);
+    }
+    const savedTheme = localStorage.getItem('sastadeal_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    function showLoading() { document.getElementById('loadingOverlay').classList.add('show'); }
+    function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
+    function switchSection(sec) {
+      document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('sec-' + sec).classList.add('active');
+      ['orders', 'query'].forEach(s => { document.getElementById(s + 'Section').classList.toggle('hidden', s !== sec); });
+    }
+
+    function toggleView() {
+      currentView = currentView === 'card' ? 'table' : 'card';
+      document.getElementById('cardView').classList.toggle('hide', currentView === 'table');
+      document.getElementById('tableView').classList.toggle('show', currentView === 'table');
+      document.getElementById('viewToggleBtn').textContent = currentView === 'card' ? ' Table View' : '📋 Card View';
+    }
 
     async function loadOrders() {
+      showLoading();
       try {
         const r = await apiCall('getMediatorOrders', { mediatorName: session.name });
         if (r.success) {
-          allOrders = r.orders || [];
+          allOrders = (r.orders || []).sort((a, b) => (b.OrderNo || 0) - (a.OrderNo || 0));
+          filteredOrders = [...allOrders];
           renderStats(r);
           renderOrders(allOrders);
+          populateQueryOrders(allOrders);
         }
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) {}
+      // Load highlights
+      try {
+        const hl = await apiCall('getHighlights', { role: 'mediator' });
+        if (hl.success && hl.highlights && hl.highlights.length > 0) {
+          const h = hl.highlights[0];
+          document.getElementById('highlightBanner').classList.add('show');
+          document.getElementById('highlightTitle').textContent = '📢 ' + (h.title || 'Announcement');
+          document.getElementById('highlightText').textContent = h.message || '';
+          document.getElementById('highlightDate').textContent = h.date ? formatDate(h.date) : '';
+        }
+      } catch (e) {}
+      hideLoading();
     }
 
     function renderStats(r) {
-      const totalOrders = r.total || 0;
+      const total = r.total || 0;
       const totalLess = r.totalLess || 0;
       const totalRefund = r.totalRefund || 0;
-      const pending = totalOrders - (allOrders.filter(o => o.OrderStatus === 'Got Refund').length);
-
+      let totalOrderAmt = 0, totalPending = 0;
+      allOrders.forEach(o => {
+        totalOrderAmt += parseFloat(o.PricePaid || 0);
+        if (o.OrderStatus !== 'Got Refund') totalPending += parseFloat(o.Less || 0);
+      });
       document.getElementById('medStats').innerHTML = `
-        <div class="stat-box">
-          <div class="val" style="color:var(--accent);">${totalOrders}</div>
-          <div class="lbl">Total Orders</div>
-        </div>
-        <div class="stat-box">
-          <div class="val" style="color:var(--yellow);">₹${totalLess.toLocaleString('en-IN')}</div>
-          <div class="lbl">Total Less</div>
-        </div>
-        <div class="stat-box">
-          <div class="val" style="color:var(--green);">₹${totalRefund.toLocaleString('en-IN')}</div>
-          <div class="lbl">Total Refund</div>
-        </div>
-        <div class="stat-box">
-          <div class="val" style="color:var(--orange);">${pending}</div>
-          <div class="lbl">Pending</div>
-        </div>
+        <div class="kpi"><div class="v" style="color:var(--accent);">${total}</div><div class="l">Total Orders</div></div>
+        <div class="kpi"><div class="v" style="color:var(--green);">₹${totalOrderAmt.toLocaleString('en-IN')}</div><div class="l">Order Amount</div></div>
+        <div class="kpi"><div class="v" style="color:var(--yellow);">₹${totalLess.toLocaleString('en-IN')}</div><div class="l">Total Less</div></div>
+        <div class="kpi"><div class="v" style="color:var(--purple);">₹${totalRefund.toLocaleString('en-IN')}</div><div class="l">Total Refund</div></div>
+        <div class="kpi"><div class="v" style="color:var(--red);">₹${totalPending.toLocaleString('en-IN')}</div><div class="l">Pending</div></div>
       `;
     }
 
     function renderOrders(orders) {
-      const tbody = document.getElementById('ordersBody');
       const today = new Date();
+      const cardView = document.getElementById('cardView');
+      const tbody = document.getElementById('ordersBody');
 
       if (!orders.length) {
+        cardView.innerHTML = '';
         tbody.innerHTML = '';
         document.getElementById('emptyState').classList.remove('hidden');
         return;
       }
       document.getElementById('emptyState').classList.add('hidden');
 
-      tbody.innerHTML = orders.map(o => {
+      // Card view
+      cardView.innerHTML = orders.map(o => {
         let daysHtml = '';
-        if (o.RefundFormDate && !o.RefundDate) {
-          const days = daysBetween(o.RefundFormDate, today);
-          if (days !== null) daysHtml = `<span class="days-badge" style="background:rgba(245,158,11,0.1);color:var(--yellow);">${days}d</span>`;
-        } else if (o.RefundFormDate && o.RefundDate) {
-          const days = daysBetween(o.RefundFormDate, o.RefundDate);
-          if (days !== null) daysHtml = `<span class="days-badge" style="background:rgba(16,185,129,0.1);color:var(--green);">${days}d ✓</span>`;
-        }
-
-        const refundStatus = o.OrderStatus === 'Got Refund' ?
-          '<span style="color:var(--green);font-weight:600;">✅ Refunded</span>' :
-          '<span style="color:var(--yellow);font-weight:600;">⏳ Pending</span>';
+        if (o.RefundFormDate && !o.RefundDate) { const d = daysBetween(o.RefundFormDate, today); if(d!==null) daysHtml = `<span style="font-size:10px;padding:1px 6px;border-radius:6px;background:rgba(217,119,6,0.15);color:var(--yellow);font-weight:600;">${d}d</span>`; }
+        else if (o.RefundFormDate && o.RefundDate) { const d = daysBetween(o.RefundFormDate, o.RefundDate); if(d!==null) daysHtml = `<span style="font-size:10px;padding:1px 6px;border-radius:6px;background:rgba(22,163,74,0.15);color:var(--green);font-weight:600;">${d}d ✓</span>`; }
+        const refundStatus = o.OrderStatus === 'Got Refund' ? '<span style="color:var(--green);font-weight:600;font-size:11px;">✅ Refunded</span>' : '<span style="color:var(--yellow);font-weight:600;font-size:11px;">⏳ Pending</span>';
 
         return `
-          <tr>
-            <td style="font-weight:600;color:var(--accent);">${o.OrderNo}</td>
-            <td>${o.OrderedPlatform}</td>
-            <td>${o.ProductName}</td>
-            <td>₹${o.PricePaid || 0}</td>
-            <td style="font-weight:600;color:var(--green);">₹${o.Less || 0}</td>
-            <td>${statusBadge(o.OrderStatus || 'Order Placed')}</td>
-            <td>${refundStatus}</td>
-            <td>${daysHtml || '—'}</td>
-          </tr>
+          <div class="order-card">
+            <div class="order-header">
+              <div class="order-header-left">
+                <div class="order-id">#${o.OrderNo || ''} | ${o.OrderedPlatform || ''}</div>
+                <div class="order-product" title="${o.ProductName || ''}">${(o.ProductName || '').substring(0, 35)}${(o.ProductName || '').length > 35 ? '...' : ''}</div>
+              </div>
+              <div class="order-header-right">
+                <div class="order-date">${o.OrderDate ? formatDate(o.OrderDate) : '—'}</div>
+                <span class="status-badge">${o.OrderStatus || 'Pending'}</span>
+              </div>
+            </div>
+            <div class="order-info">
+              <div class="info-cell"><label>Price</label><span>₹${o.PricePaid || 0}</span></div>
+              <div class="info-cell"><label>Less</label><span style="color:var(--yellow);font-weight:700;">₹${o.Less || 0}</span></div>
+              <div class="info-cell"><label>Refund</label>${refundStatus}</div>
+              <div class="info-cell"><label>Days</label>${daysHtml || '—'}</div>
+              <div class="info-cell"><label>Platform ID</label><span style="font-family:'JetBrains Mono',monospace;font-size:10px;">${o.PlatformOrderID || '—'}</span></div>
+              <div class="info-cell"><label>Account</label><span>${o.AccountName || '—'}</span></div>
+            </div>
+          </div>
         `;
+      }).join('');
+
+      // Table view
+      tbody.innerHTML = orders.map(o => {
+        let daysHtml = '';
+        if (o.RefundFormDate && !o.RefundDate) { const d = daysBetween(o.RefundFormDate, today); if(d!==null) daysHtml = `<span style="background:rgba(217,119,6,0.15);color:var(--yellow);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:600;">${d}d</span>`; }
+        else if (o.RefundFormDate && o.RefundDate) { const d = daysBetween(o.RefundFormDate, o.RefundDate); if(d!==null) daysHtml = `<span style="background:rgba(22,163,74,0.15);color:var(--green);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:600;">${d}d ✓</span>`; }
+        const refundStatus = o.OrderStatus === 'Got Refund' ? '<span style="color:var(--green);font-weight:600;">✅</span>' : '<span style="color:var(--yellow);font-weight:600;">⏳</span>';
+        return `<tr>
+          <td style="font-weight:600;color:var(--accent);">${o.OrderNo}</td>
+          <td>${o.OrderedPlatform}</td>
+          <td title="${o.ProductName}" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;">${(o.ProductName || '').substring(0, 20)}</td>
+          <td>₹${o.PricePaid || 0}</td>
+          <td style="font-weight:600;color:var(--yellow);">₹${o.Less || 0}</td>
+          <td>${statusBadge(o.OrderStatus || 'Order Placed')}</td>
+          <td>${refundStatus}</td>
+          <td>${daysHtml || '—'}</td>
+        </tr>`;
       }).join('');
     }
 
     function filterOrders() {
       const status = document.getElementById('statusFilter').value;
       const refund = document.getElementById('refundFilter').value;
-
       let filtered = allOrders;
       if (status) filtered = filtered.filter(o => o.OrderStatus === status);
       if (refund === 'pending') filtered = filtered.filter(o => o.OrderStatus !== 'Got Refund');
       if (refund === 'done') filtered = filtered.filter(o => o.OrderStatus === 'Got Refund');
-
       renderOrders(filtered);
+    }
+
+    function populateQueryOrders(orders) {
+      const sel = document.getElementById('queryOrder');
+      sel.innerHTML = '<option value="">-- Select order --</option>' + orders.map(o => `<option value="${o.OrderNo}">#${o.OrderNo} - ${(o.ProductName||'').substring(0,30)}</option>`).join('');
+    }
+
+    async function submitQuery() {
+      const orderNo = document.getElementById('queryOrder').value;
+      const subject = document.getElementById('querySubject').value.trim();
+      const message = document.getElementById('queryMessage').value.trim();
+      if (!subject || !message) { showToast('Fill subject and message', 'warning'); return; }
+      try {
+        const r = await apiCall('sendQueryEmail', {
+          from: session.mobile || session.email,
+          fromName: session.name + ' (Mediator)',
+          orderNo: orderNo || '',
+          subject: '[Mediator Query] ' + subject,
+          message: message
+        });
+        if (r.success) { showToast('Query sent to admin!', 'success'); document.getElementById('querySubject').value = ''; document.getElementById('queryMessage').value = ''; }
+        else showToast('Failed', 'error');
+      } catch (e) { showToast('Error', 'error'); }
     }
 
     async function exportMediatorData(format) {
@@ -249,9 +374,9 @@
 
       if (filtered.length === 0) { showToast('No data to export', 'warning'); return; }
 
+      // Exclude buyer info columns
       const headers = ['OrderNo','OrderedPlatform','AccountName','ProductName','PlatformOrderID',
-        'PricePaid','Less','BuyerToget','BuyerActualGot','OrderStatus','PaymentStatus',
-        'OrderDate','RefundFormDate','RefundDate','PaymentDate'];
+        'PricePaid','Less','OrderStatus','OrderDate','RefundFormDate','RefundDate','MediatorName'];
       const rows = filtered.map(o => headers.map(h => String(o[h]||'').replace(/"/g,'""')));
 
       if (format === 'csv') {

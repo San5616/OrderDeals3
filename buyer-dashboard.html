@@ -111,6 +111,17 @@
     .t-date { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
     .t-days { font-size: 10px; padding: 1px 5px; border-radius: 6px; font-weight: 600; }
 
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center; }
+    .loading-overlay.show { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .highlight-banner { background: linear-gradient(135deg, var(--accent), var(--purple)); color: white; padding: 12px 16px; border-radius: var(--radius); margin-bottom: 10px; display: none; }
+    .highlight-banner.show { display: block; }
+    .highlight-banner h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .highlight-banner p { font-size: 12px; opacity: 0.9; }
+    .highlight-banner .hl-date { font-size: 10px; opacity: 0.7; margin-top: 4px; }
+
     .hidden { display: none !important; }
     .empty-state { text-align: center; padding: 30px; color: var(--text3); }
 
@@ -149,6 +160,15 @@
       <button class="btn-logout" onclick="logout()">Logout</button>
     </div>
   </nav>
+
+  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+  <!-- Highlights Banner -->
+  <div class="highlight-banner" id="highlightBanner" style="display:none;">
+    <h4 id="highlightTitle">📢 Announcement</h4>
+    <p id="highlightText"></p>
+    <div class="hl-date" id="highlightDate"></div>
+  </div>
 
   <div class="main-content">
     <div class="dash-tabs">
@@ -235,6 +255,9 @@
     const savedTheme = localStorage.getItem('sastadeal_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    function showLoading() { document.getElementById('loadingOverlay').classList.add('show'); }
+    function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
     function switchSection(sec) {
       document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
       document.getElementById('sec-' + sec).classList.add('active');
@@ -275,6 +298,7 @@
     async function loadMyOrders() {
       const listEl = document.getElementById('orderList');
       listEl.innerHTML = '<div class="empty-state">Loading orders...</div>';
+      showLoading();
       try {
         const r = await apiCall('getBuyerOrders', {
           userId: session.userid,
@@ -283,13 +307,24 @@
         });
         if (r.success) {
           allOrders = r.orders || [];
-          // Already sorted descending from server
           filteredOrders = [...allOrders];
           renderStats(allOrders);
           renderOrders(allOrders);
           populateQueryOrders(allOrders);
         }
       } catch (e) { listEl.innerHTML = '<div class="empty-state">Error loading orders</div>'; }
+      // Load highlights
+      try {
+        const hl = await apiCall('getHighlights', { role: 'buyer' });
+        if (hl.success && hl.highlights && hl.highlights.length > 0) {
+          const h = hl.highlights[0];
+          document.getElementById('highlightBanner').style.display = 'block';
+          document.getElementById('highlightTitle').textContent = '📢 ' + (h.title || 'Announcement');
+          document.getElementById('highlightText').textContent = h.message || '';
+          document.getElementById('highlightDate').textContent = h.date ? formatDate(h.date) : '';
+        }
+      } catch (e) {}
+      hideLoading();
     }
 
     function daysAgo(dateStr) {
@@ -362,7 +397,7 @@
                   <button class="copy-icon" onclick="copyText('${o.PlatformOrderID || o.OrderNo || ''}')" title="Copy ID">📋</button>
                 </div>
                 <div class="order-product" title="${o.ProductName || ''}">${o.ProductName || 'Product'}</div>
-                <div style="font-size:10px;opacity:0.7;margin-top:2px;">${o.OrderedPlatform || ''} | ₹${o.PricePaid || 0} | <span style="color:#ff6666;">Less: ₹${o.BuyerLess || 0}</span></div>
+                <div style="font-size:10px;opacity:0.7;margin-top:2px;">${o.OrderedPlatform || ''} | ₹${o.PricePaid || 0} | <span style="color:#ff6666;">Less: ₹${o.BuyerLess || o.Less || 0}</span> | For: ${o.ForWhom || o.UserID || 'Self'}</div>
               </div>
               <div class="order-header-right">
                 <div class="order-date">${o.OrderDate ? formatDate(o.OrderDate) : '—'} ${daysAgo(o.OrderDate)}</div>
@@ -384,7 +419,7 @@
                 <div class="detail-item"><label>Account</label><span>${o.AccountName || '—'}</span></div>
                 <div class="detail-item"><label>Platform</label><span>${o.OrderedPlatform || '—'}</span></div>
                 <div class="detail-item"><label>Order Amount</label><span class="amount">₹${o.PricePaid || 0}</span></div>
-                <div class="detail-item"><label><span style="color:var(--red);">Less</span></label><span class="less-amount">₹${o.BuyerLess || 0}</span></div>
+                <div class="detail-item"><label><span style="color:var(--red);">Less</span></label><span class="less-amount">₹${o.BuyerLess || o.Less || 0}</span></div>
                 <div class="detail-item"><label>To Get</label><span style="color:var(--green);font-weight:700;">₹${o.BuyerToget || 0}</span></div>
                 <div class="detail-item"><label>Received</label><span>₹${o.BuyerActualGot || 0}</span></div>
                 <div class="detail-item"><label>Payment</label><span style="color:${o.PaymentStatus === 'Paid' ? 'var(--green)' : 'var(--yellow)'};font-weight:700;">${o.PaymentStatus === 'Paid' ? '✅ Paid' : '⏳ Pending'}</span></div>
@@ -444,7 +479,7 @@ Product: ${o.ProductName}
 Platform: ${o.OrderedPlatform}
 Account: ${o.AccountName}
 Price: ₹${o.PricePaid}
-Less: ₹${o.BuyerLess || 0}
+Less: ₹${o.BuyerLess || o.Less || 0}
 To Get: ₹${o.BuyerToget || 0}
 Received: ₹${o.BuyerActualGot || 0}
 Status: ${o.OrderStatus}
@@ -510,22 +545,26 @@ Platform ID: ${o.PlatformOrderID}`;
           statusFilter: showOnly === 'all' ? '' : showOnly
         });
         if (r.success && r.rows.length > 0) {
+          // Filter headers: exclude Less and MediatorName for buyer export
+          const excludeCols = ['Less', 'MediatorName'];
+          const colIndices = r.headers.map((h, i) => i).filter(i => !excludeCols.includes(r.headers[i]));
+          const filteredHeaders = colIndices.map(i => r.headers[i]);
+          const filteredRows = r.rows.map(row => colIndices.map(i => row[i]));
+
           if (format === 'csv') {
-            // CSV export
-            let csv = r.headers.join(',') + '\n';
-            r.rows.forEach(row => { csv += row.map(c => `"${c}"`).join(',') + '\n'; });
+            let csv = filteredHeaders.join(',') + '\n';
+            filteredRows.forEach(row => { csv += row.map(c => `"${c}"`).join(',') + '\n'; });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = `sastadeal_orders_${new Date().toISOString().split('T')[0]}.csv`;
             a.click(); URL.revokeObjectURL(url);
           } else {
-            // XLS export (HTML table format that Excel opens)
             let html = '<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;}td,th{border:1px solid #ccc;padding:6px;font-size:11px;}</style></head><body>';
             html += '<h2>SastaDeal Orders Export — ' + parentName + '</h2>';
-            html += '<p>Exported: ' + new Date().toLocaleString('en-IN') + '</p>';
-            html += '<table><tr>' + r.headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
-            r.rows.forEach(row => { html += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>'; });
+            html += '<p>Exported: ' + new Date().toLocaleString('en-IN') + ' | Orders: ' + filteredRows.length + '</p>';
+            html += '<table><tr>' + filteredHeaders.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            filteredRows.forEach(row => { html += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>'; });
             html += '</table></body></html>';
             const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
             const url = URL.createObjectURL(blob);
