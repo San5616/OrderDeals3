@@ -119,6 +119,8 @@
           <option value="pending">Pending Refund</option>
           <option value="done">Refunded</option>
         </select>
+        <button onclick="exportMediatorData('csv')" style="padding:7px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;"> Export CSV</button>
+        <button onclick="exportMediatorData('xls')" style="padding:7px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;"> Export XLS</button>
       </div>
       <div class="table-wrapper">
         <table>
@@ -237,7 +239,46 @@
       renderOrders(filtered);
     }
 
+    async function exportMediatorData(format) {
+      const status = document.getElementById('statusFilter').value;
+      const refund = document.getElementById('refundFilter').value;
+      let filtered = allOrders;
+      if (status) filtered = filtered.filter(o => o.OrderStatus === status);
+      if (refund === 'pending') filtered = filtered.filter(o => o.OrderStatus !== 'Got Refund');
+      if (refund === 'done') filtered = filtered.filter(o => o.OrderStatus === 'Got Refund');
+
+      if (filtered.length === 0) { showToast('No data to export', 'warning'); return; }
+
+      const headers = ['OrderNo','OrderedPlatform','AccountName','ProductName','PlatformOrderID',
+        'PricePaid','Less','BuyerToget','BuyerActualGot','OrderStatus','PaymentStatus',
+        'OrderDate','RefundFormDate','RefundDate','PaymentDate'];
+      const rows = filtered.map(o => headers.map(h => String(o[h]||'').replace(/"/g,'""')));
+
+      if (format === 'csv') {
+        let csv = headers.join(',') + '\n';
+        rows.forEach(row => { csv += row.map(c => `"${c}"`).join(',') + '\n'; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `sastadeal_mediator_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+      } else {
+        let html = '<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;}td,th{border:1px solid #ccc;padding:6px;font-size:11px;}</style></head><body>';
+        html += '<h2>SastaDeal Mediator Export — ' + session.name + '</h2>';
+        html += '<p>Exported: ' + new Date().toLocaleString('en-IN') + ' | Orders: ' + rows.length + '</p>';
+        html += '<table><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+        rows.forEach(row => { html += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>'; });
+        html += '</table></body></html>';
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `sastadeal_mediator_${new Date().toISOString().split('T')[0]}.xls`;
+        a.click(); URL.revokeObjectURL(url);
+      }
+      showToast(`Exported ${filtered.length} orders!`, 'success');
+    }
+
     loadOrders();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c4df550fbc7a0a',t:'MTc4NDI0NTQ0MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

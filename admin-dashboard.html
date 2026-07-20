@@ -214,16 +214,41 @@
           <input type="text" id="searchInput" placeholder="Search orders..." oninput="searchOrders()">
           <button onclick="searchOrders()">🔍</button>
         </div>
-        <div class="show-only">
-          <label><input type="radio" name="showOnly" value="pending" checked onchange="searchOrders()"> Pending (excl. refunded)</label>
-          <label><input type="radio" name="showOnly" value="all" onchange="searchOrders()"> All</label>
-          <label><input type="radio" name="showOnly" value="Pending payment" onchange="searchOrders()"> Pay Pending</label>
-          <label><input type="radio" name="showOnly" value="Paid" onchange="searchOrders()"> Paid</label>
-          <label><input type="radio" name="showOnly" value="Got Refund" onchange="searchOrders()"> Refunded</label>
+        <div class="filter-search">
+          <select id="mediatorFilter" onchange="searchOrders()" style="width:150px;">
+            <option value="all">All Mediators</option>
+          </select>
+          <select id="parentFilter" onchange="searchOrders()" style="width:150px;">
+            <option value="all">All Parent IDs</option>
+          </select>
+        </div>
+        <div class="show-only" id="statusCheckboxes">
+          <label style="font-weight:700;color:var(--text);">Status:</label>
+          <label><input type="checkbox" name="statusFilter" value="Order Placed" checked onchange="searchOrders()"> Order Placed</label>
+          <label><input type="checkbox" name="statusFilter" value="Product Received" checked onchange="searchOrders()"> Received</label>
+          <label><input type="checkbox" name="statusFilter" value="Reviewed" checked onchange="searchOrders()"> Reviewed</label>
+          <label><input type="checkbox" name="statusFilter" value="Review Live" checked onchange="searchOrders()"> Review Live</label>
+          <label><input type="checkbox" name="statusFilter" value="Refund form filled" checked onchange="searchOrders()"> Form Filled</label>
+          <label><input type="checkbox" name="statusFilter" value="Got Refund" checked onchange="searchOrders()"> Got Refund</label>
+          <label><input type="checkbox" name="statusFilter" value="Cancelled" onchange="searchOrders()"> Cancelled</label>
+          <label><input type="checkbox" name="statusFilter" value="Review deleted" onchange="searchOrders()"> Review Deleted</label>
+          <label><input type="checkbox" name="statusFilter" value="Product not delivered" onchange="searchOrders()"> Not Delivered</label>
+          <label><input type="checkbox" name="statusFilter" value="Cancelled by seller" onchange="searchOrders()"> Cancelled Seller</label>
+          <label><input type="checkbox" name="statusFilter" value="Cancelled by Amazon" onchange="searchOrders()"> Cancelled Amz</label>
+          <label><input type="checkbox" name="statusFilter" value="Returned to seller by amz" onchange="searchOrders()"> Returned Amz</label>
+          <label><input type="checkbox" name="statusFilter" value="Review not live/Cancelled" onchange="searchOrders()"> Review Not Live</label>
+        </div>
+        <div class="show-only" style="margin-top:6px;">
+          <label style="font-weight:700;color:var(--text);">Payment:</label>
+          <label><input type="radio" name="paymentFilter" value="all" checked onchange="searchOrders()"> All</label>
+          <label><input type="radio" name="paymentFilter" value="Pending payment" onchange="searchOrders()"> Pay Pending</label>
+          <label><input type="radio" name="paymentFilter" value="Paid" onchange="searchOrders()"> Paid</label>
         </div>
         <div class="filter-actions" style="margin-top:8px;">
           <button class="btn-refresh" onclick="loadAllOrders()">🔄 Refresh</button>
           <button class="btn-reset" onclick="resetFilters()"> Reset</button>
+          <button onclick="exportAdminData('csv')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;"> Export CSV</button>
+          <button onclick="exportAdminData('xls')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;"> Export XLS</button>
         </div>
       </div>
       <div class="order-list" id="orderList"></div>
@@ -301,7 +326,7 @@
           <input type="date" id="payDateTo" onchange="searchPayments()">
           <input type="number" id="payAmount" placeholder="Amount..." onchange="searchPayments()" style="width:120px;">
         </div>
-        <div class="table-wrapper"><table><thead><tr><th>#</th><th>Product</th><th>Amount</th><th>Method</th><th>Pay Date</th><th>Refund Date</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
+        <div class="table-wrapper"><table><thead><tr><th>#</th><th>Product</th><th>Amount</th><th>Mediator</th><th>Parent ID</th><th>Pay Date</th><th>Refund Date</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
       </div>
     </div>
 
@@ -397,7 +422,7 @@
       if (tab === 'whatsapp' || tab === 'email') populateOrderSelects();
     }
 
-    async function init() { await refreshDropdowns(); loadStats(); loadAllOrders(); loadMediators(); loadBuyers(); loadNextOrderNo(); }
+    async function init() { await refreshDropdowns(); loadStats(); loadAllOrders(); loadMediators(); loadBuyers(); loadNextOrderNo(); populateFilterDropdowns(); }
 
     async function refreshDropdowns() { try { const dd = await apiCall('getDropdowns'); if (dd.success) dropdownData = dd; populateAdminForm(); } catch (e) {} }
     function populateAdminForm() {
@@ -440,6 +465,21 @@
       try { const r = await apiCall('searchOrders', { filter: 'all', paymentFilter: 'all' }); if(r.success) { allOrders = r.orders || []; searchOrders(); } } catch(e){}
     }
 
+    // Populate mediator and parent dropdowns
+    async function populateFilterDropdowns() {
+      try {
+        const r = await apiCall('getDropdowns');
+        if (r.success) {
+          const medSel = document.getElementById('mediatorFilter');
+          medSel.innerHTML = '<option value="all">All Mediators</option>' + (r.mediators||[]).map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+          // Parent IDs
+          const parentSel = document.getElementById('parentFilter');
+          const parents = [...new Set((r.accounts||[]).map(a => a.parentId).filter(p => p))];
+          parentSel.innerHTML = '<option value="all">All Parent IDs</option>' + parents.map(p => `<option value="${p}">${p}</option>`).join('');
+        }
+      } catch (e) {}
+    }
+
     function getStatusMessage(o) {
       const t = o.tracking || {};
       if (t.PaymentStatus === 'Paid' && t.BuyerActualGot) { const pd = t.PaymentDate ? formatDate(t.PaymentDate) : ''; return { type:'success', html:`<strong>Status:</strong> Paid and Credited ₹${t.BuyerActualGot} on ${pd}.` }; }
@@ -449,30 +489,36 @@
       return { type:'info', html:`<strong>Status:</strong> ${t.OrderStatus||'Order Placed'}.` };
     }
 
-    function searchOrders() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
+    async function searchOrders() {
+      const query = document.getElementById('searchInput').value.trim();
       const filterType = document.getElementById('filterType').value;
-      const showOnly = document.querySelector('input[name="showOnly"]:checked').value;
-      let filtered = allOrders;
-      if (query) {
-        filtered = filtered.filter(o => {
-          if (filterType==='id') return String(o.tracking?.PlatformOrderID||o.OrderNo||'').toLowerCase().includes(query);
-          if (filterType==='product') return (o.tracking?.ProductName||'').toLowerCase().includes(query);
-          if (filterType==='platform') return (o.tracking?.OrderedPlatform||'').toLowerCase().includes(query);
-          if (filterType==='buyer') return (o.tracking?.UserID||'').toLowerCase().includes(query);
-          if (filterType==='mediator') return (o.tracking?.MediatorName||'').toLowerCase().includes(query);
-          return JSON.stringify(o).toLowerCase().includes(query);
+      const mediatorName = document.getElementById('mediatorFilter').value;
+      const parentId = document.getElementById('parentFilter').value;
+      const paymentFilter = document.querySelector('input[name="paymentFilter"]:checked').value;
+      // Get all checked status filters
+      const statusFilters = Array.from(document.querySelectorAll('input[name="statusFilter"]:checked')).map(cb => cb.value);
+
+      try {
+        const r = await apiCall('advancedSearch', {
+          query, filterType, statusFilters, paymentFilter,
+          mediatorName: mediatorName === 'all' ? '' : mediatorName,
+          parentId: parentId === 'all' ? '' : parentId
         });
-      }
-      if (showOnly === 'pending') filtered = filtered.filter(o => o.tracking && o.tracking.OrderStatus !== 'Got Refund');
-      else if (showOnly !== 'all') {
-        if (showOnly === 'Paid' || showOnly === 'Pending payment') filtered = filtered.filter(o => o.tracking && o.tracking.PaymentStatus === showOnly);
-        else filtered = filtered.filter(o => o.tracking && o.tracking.OrderStatus === showOnly);
-      }
-      renderOrders(filtered);
+        if (r.success) {
+          allOrders = r.orders || [];
+          renderOrders(allOrders);
+        }
+      } catch (e) {}
     }
 
-    function resetFilters() { document.getElementById('searchInput').value=''; document.querySelector('input[name="showOnly"][value="pending"]').checked=true; searchOrders(); }
+    function resetFilters() {
+      document.getElementById('searchInput').value='';
+      document.getElementById('mediatorFilter').value='all';
+      document.getElementById('parentFilter').value='all';
+      document.querySelectorAll('input[name="statusFilter"]').forEach(cb => cb.checked = true);
+      document.querySelector('input[name="paymentFilter"][value="all"]').checked = true;
+      searchOrders();
+    }
 
     function renderOrders(orders) {
       const listEl = document.getElementById('orderList');
@@ -631,7 +677,22 @@
     }
 
     async function searchPayments() {
-      try { const r=await apiCall('getRecentPayments',{dateFrom:document.getElementById('payDateFrom').value,dateTo:document.getElementById('payDateTo').value,amount:document.getElementById('payAmount').value,dateType:document.getElementById('payDateType').value}); if(r.success) { document.getElementById('paymentsBody').innerHTML=(r.payments||[]).map(p=>`<tr><td style="font-weight:600;color:var(--accent);">${p.OrderNo}</td><td title="${p.ProductName}">${(p.ProductName||'').substring(0,25)}${(p.ProductName||'').length>25?'...':''}</td><td style="font-weight:700;color:var(--red);">${p.BuyerActualGot||p.ActualGot||0}</td><td>${p.PaymentMethod||'—'}</td><td>${p._paymentDate?formatDate(p._paymentDate):'—'}</td><td>${p._refundDate?formatDate(p._refundDate):'—'}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text3);">No payments</td></tr>'; } } catch(e){}
+      try {
+        const r=await apiCall('getRecentPayments',{dateFrom:document.getElementById('payDateFrom').value,dateTo:document.getElementById('payDateTo').value,amount:document.getElementById('payAmount').value,dateType:document.getElementById('payDateType').value});
+        if(r.success) {
+          document.getElementById('paymentsBody').innerHTML=(r.payments||[]).map(p=>`
+            <tr>
+              <td style="font-weight:600;color:var(--accent);">${p.OrderNo}</td>
+              <td title="${p.ProductName}">${(p.ProductName||'').substring(0,20)}${(p.ProductName||'').length>20?'...':''}</td>
+              <td style="font-weight:700;color:var(--red);">₹${p.BuyerActualGot||p.ActualGot||0}</td>
+              <td>${p._mediatorName||'—'}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${p._parentId||'—'}</td>
+              <td>${p._paymentDate?formatDate(p._paymentDate):'—'}</td>
+              <td>${p._refundDate?formatDate(p._refundDate):'—'}</td>
+            </tr>
+          `).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text3);">No payments</td></tr>';
+        }
+      } catch(e){}
     }
 
     // Fetch + Tracking Edit
@@ -746,6 +807,59 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
 
     function openModal() { document.getElementById('editModal').classList.add('open'); }
     function closeModal() { document.getElementById('editModal').classList.remove('open'); }
+
+    // Export admin data
+    async function exportAdminData(format) {
+      const paymentFilter = document.querySelector('input[name="paymentFilter"]:checked').value;
+      const statusFilters = Array.from(document.querySelectorAll('input[name="statusFilter"]:checked')).map(cb => cb.value);
+      const mediatorName = document.getElementById('mediatorFilter').value;
+      const parentId = document.getElementById('parentFilter').value;
+      try {
+        const r = await apiCall('advancedSearch', {
+          query: '', filterType: 'all', statusFilters,
+          paymentFilter: paymentFilter === 'all' ? '' : paymentFilter,
+          mediatorName: mediatorName === 'all' ? '' : mediatorName,
+          parentId: parentId === 'all' ? '' : parentId
+        });
+        if (r.success && r.orders.length > 0) {
+          const headers = ['OrderNo','OrderedPlatform','AccountName','ProductName','PlatformOrderID',
+            'PricePaid','Less','BuyerLess','BuyerToget','BuyerActualGot','OrderStatus',
+            'PaymentStatus','PaymentMethod','OrderDate','DeliveryDate','ReviewDate',
+            'ReviewLiveDate','RefundFormDate','RefundDate','PaymentDate','MediatorName','UserID','ForWhom','Notes'];
+
+          const rows = r.orders.map(o => {
+            const t = o.tracking || o;
+            return headers.map(h => {
+              const val = t[h] !== undefined ? t[h] : (o[h] !== undefined ? o[h] : '');
+              return String(val).replace(/"/g, '""');
+            });
+          });
+
+          if (format === 'csv') {
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => { csv += row.map(c => `"${c}"`).join(',') + '\n'; });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `sastadeal_admin_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+          } else {
+            let html = '<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;}td,th{border:1px solid #ccc;padding:6px;font-size:11px;}</style></head><body>';
+            html += '<h2>SastaDeal Admin Export</h2>';
+            html += '<p>Exported: ' + new Date().toLocaleString('en-IN') + ' | Orders: ' + rows.length + '</p>';
+            html += '<table><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            rows.forEach(row => { html += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>'; });
+            html += '</table></body></html>';
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `sastadeal_admin_${new Date().toISOString().split('T')[0]}.xls`;
+            a.click(); URL.revokeObjectURL(url);
+          }
+          showToast(`Exported ${r.total} orders!`, 'success');
+        } else { showToast('No data to export', 'warning'); }
+      } catch (e) { showToast('Export failed', 'error'); }
+    }
 
     document.getElementById('admDate').valueAsDate = new Date();
     init();

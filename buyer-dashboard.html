@@ -178,6 +178,10 @@
           <label><input type="radio" name="showOnly" value="Got Refund" onchange="applyFilters()"> Refunded</label>
           <label><input type="radio" name="showOnly" value="Refund form filled" onchange="applyFilters()"> Form Filled</label>
         </div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button onclick="exportData('csv')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;"> Export CSV</button>
+          <button onclick="exportData('xls')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;">📊 Export XLS</button>
+        </div>
       </div>
       <div class="order-list" id="orderList"></div>
     </div>
@@ -272,11 +276,14 @@
       const listEl = document.getElementById('orderList');
       listEl.innerHTML = '<div class="empty-state">Loading orders...</div>';
       try {
-        const r = await apiCall('getBuyerOrders', { userId: session.userid });
+        const r = await apiCall('getBuyerOrders', {
+          userId: session.userid,
+          mobile: session.mobile,
+          email: session.email
+        });
         if (r.success) {
           allOrders = r.orders || [];
-          // Sort by OrderNo descending
-          allOrders.sort((a, b) => (b.OrderNo || 0) - (a.OrderNo || 0));
+          // Already sorted descending from server
           filteredOrders = [...allOrders];
           renderStats(allOrders);
           renderOrders(allOrders);
@@ -293,22 +300,25 @@
 
     function renderStats(orders) {
       let total = orders.length, paid = 0, pending = 0, refunded = 0;
-      let totalPricePaid = 0, totalPaidAmt = 0, totalReceived = 0, pendingAmount = 0, pendingForm = 0, pendingPayCount = 0;
+      let totalPricePaid = 0, totalPaidAmt = 0, totalReceived = 0, pendingAmount = 0, pendingForm = 0, pendingPayCount = 0, totalToGet = 0;
       orders.forEach(o => {
         totalPricePaid += parseFloat(o.PricePaid || 0);
         totalReceived += parseFloat(o.BuyerActualGot || 0);
+        totalToGet += parseFloat(o.BuyerToget || 0);
         const toGet = parseFloat(o.BuyerToget || 0);
         if (o.PaymentStatus === 'Paid') { paid++; totalPaidAmt += parseFloat(o.BuyerActualGot || o.BuyerToget || 0); }
         else { pending++; pendingAmount += toGet; if (o.OrderStatus === 'Got Refund') pendingPayCount++; }
         if (o.OrderStatus === 'Got Refund') refunded++;
-        if (o.OrderStatus === 'Refund form filled') pendingForm++;
+        // Pending form = orders where RefundFormDate is not mentioned
+        if (!o.RefundFormDate && o.OrderStatus !== 'Got Refund' && o.OrderStatus !== 'Cancelled') pendingForm++;
       });
       document.getElementById('myStats').innerHTML = `
         <div class="kpi"><div class="v" style="color:var(--accent);">${total}</div><div class="l">Total Orders</div><div class="sub">${refunded} refunded</div></div>
-        <div class="kpi"><div class="v" style="color:var(--green);">₹${totalPricePaid.toLocaleString('en-IN')}</div><div class="l">Price Paid</div></div>
-        <div class="kpi"><div class="v" style="color:var(--red);">₹${pendingAmount.toLocaleString('en-IN')}</div><div class="l">Pending Amt</div><div class="sub">${pendingPayCount} awaiting pay</div></div>
-        <div class="kpi"><div class="v" style="color:var(--yellow);">${pendingForm}</div><div class="l">Pending Form</div></div>
-        <div class="kpi"><div class="v" style="color:var(--purple);">${pending}</div><div class="l">Active</div><div class="sub">${paid} paid</div></div>
+        <div class="kpi"><div class="v" style="color:var(--green);">₹${totalPricePaid.toLocaleString('en-IN')}</div><div class="l">Order Amount</div></div>
+        <div class="kpi"><div class="v" style="color:var(--purple);">₹${totalReceived.toLocaleString('en-IN')}</div><div class="l">Received</div></div>
+        <div class="kpi"><div class="v" style="color:var(--red);">₹${pendingAmount.toLocaleString('en-IN')}</div><div class="l">Pending</div><div class="sub">${pendingPayCount} awaiting pay</div></div>
+        <div class="kpi"><div class="v" style="color:var(--yellow);">${pendingForm}</div><div class="l">Pending Form</div><div class="sub">no date set</div></div>
+        <div class="kpi"><div class="v" style="color:var(--cyan);">${paid}</div><div class="l">Paid</div><div class="sub">orders</div></div>
       `;
     }
 
@@ -487,6 +497,48 @@ Platform ID: ${o.PlatformOrderID}`;
     }
 
     async function requestDeal(dealId, dealTitle) { try { await apiCall('requestDeal', { buyerName: parentName, buyerMobile: session.mobile, dealTitle, dealId }); showToast('Deal request sent!', 'success'); } catch (e) { showToast('Request sent!', 'success'); } }
+
+    // Export function
+    async function exportData(format) {
+      const showOnly = document.querySelector('input[name="showOnly"]:checked').value;
+      try {
+        const r = await apiCall('exportOrders', {
+          userId: session.userid,
+          mobile: session.mobile,
+          email: session.email,
+          role: 'buyer',
+          statusFilter: showOnly === 'all' ? '' : showOnly
+        });
+        if (r.success && r.rows.length > 0) {
+          if (format === 'csv') {
+            // CSV export
+            let csv = r.headers.join(',') + '\n';
+            r.rows.forEach(row => { csv += row.map(c => `"${c}"`).join(',') + '\n'; });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `sastadeal_orders_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+          } else {
+            // XLS export (HTML table format that Excel opens)
+            let html = '<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;}td,th{border:1px solid #ccc;padding:6px;font-size:11px;}</style></head><body>';
+            html += '<h2>SastaDeal Orders Export — ' + parentName + '</h2>';
+            html += '<p>Exported: ' + new Date().toLocaleString('en-IN') + '</p>';
+            html += '<table><tr>' + r.headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            r.rows.forEach(row => { html += '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>'; });
+            html += '</table></body></html>';
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `sastadeal_orders_${new Date().toISOString().split('T')[0]}.xls`;
+            a.click(); URL.revokeObjectURL(url);
+          }
+          showToast(`Exported ${r.total} orders!`, 'success');
+        } else {
+          showToast('No data to export', 'warning');
+        }
+      } catch (e) { showToast('Export failed', 'error'); }
+    }
 
     document.getElementById('newDate').valueAsDate = new Date();
     loadData();
