@@ -362,7 +362,7 @@
                   <button class="copy-icon" onclick="copyText('${o.PlatformOrderID || o.OrderNo || ''}')" title="Copy ID">📋</button>
                 </div>
                 <div class="order-product" title="${o.ProductName || ''}">${o.ProductName || 'Product'}</div>
-                <div style="font-size:10px;opacity:0.7;margin-top:2px;">${o.OrderedPlatform || ''} | ₹${o.PricePaid || 0} | <span style="color:#ff6666;">Less: ₹${o.BuyerLess || o.Less || 0}</span></div>
+                <div style="font-size:10px;opacity:0.7;margin-top:2px;">${o.OrderedPlatform || ''} | ₹${o.PricePaid || 0} | <span style="color:#ff6666;">Less: ₹${o.BuyerLess || 0}</span></div>
               </div>
               <div class="order-header-right">
                 <div class="order-date">${o.OrderDate ? formatDate(o.OrderDate) : '—'} ${daysAgo(o.OrderDate)}</div>
@@ -384,7 +384,7 @@
                 <div class="detail-item"><label>Account</label><span>${o.AccountName || '—'}</span></div>
                 <div class="detail-item"><label>Platform</label><span>${o.OrderedPlatform || '—'}</span></div>
                 <div class="detail-item"><label>Order Amount</label><span class="amount">₹${o.PricePaid || 0}</span></div>
-                <div class="detail-item"><label><span style="color:var(--red);">Less</span></label><span class="less-amount">₹${o.BuyerLess || o.Less || 0}</span></div>
+                <div class="detail-item"><label><span style="color:var(--red);">Less</span></label><span class="less-amount">₹${o.BuyerLess || 0}</span></div>
                 <div class="detail-item"><label>To Get</label><span style="color:var(--green);font-weight:700;">₹${o.BuyerToget || 0}</span></div>
                 <div class="detail-item"><label>Received</label><span>₹${o.BuyerActualGot || 0}</span></div>
                 <div class="detail-item"><label>Payment</label><span style="color:${o.PaymentStatus === 'Paid' ? 'var(--green)' : 'var(--yellow)'};font-weight:700;">${o.PaymentStatus === 'Paid' ? '✅ Paid' : '⏳ Pending'}</span></div>
@@ -444,7 +444,7 @@ Product: ${o.ProductName}
 Platform: ${o.OrderedPlatform}
 Account: ${o.AccountName}
 Price: ₹${o.PricePaid}
-Less: ₹${o.BuyerLess || o.Less || 0}
+Less: ₹${o.BuyerLess || 0}
 To Get: ₹${o.BuyerToget || 0}
 Received: ₹${o.BuyerActualGot || 0}
 Status: ${o.OrderStatus}
