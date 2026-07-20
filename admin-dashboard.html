@@ -196,10 +196,12 @@
       <button class="admin-tab" onclick="switchTab('mediators')" id="tab-mediators"> Mediators</button>
       <button class="admin-tab" onclick="switchTab('buyers')" id="tab-buyers">👥 Buyers</button>
       <button class="admin-tab" onclick="switchTab('highlights')" id="tab-highlights">📢 Highlights</button>
+      <button class="admin-tab" onclick="switchTab('payments')" id="tab-payments">💰 Payments</button>
       <button class="admin-tab" onclick="switchTab('settings')" id="tab-settings">️</button>
     </div>
 
     <div class="stats-row" id="adminStats"></div>
+    <div class="stats-row" id="filterStats" style="display:none;"></div>
 
     <!-- ORDERS -->
     <div id="ordersSection">
@@ -368,8 +370,10 @@
         <button class="btn btn-primary" onclick="addBuyerAccount()">Add</button>
       </div>
       <div class="card"><h3>Buyers</h3><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Email</th><th>Parent</th></tr></thead><tbody id="buyersBody"></tbody></table></div></div>
+    </div>
 
-      <!-- Recent Payments (moved here) -->
+    <!-- PAYMENTS -->
+    <div id="paymentsSection" class="hidden">
       <div class="card">
         <h3>💰 Recent Payments</h3>
         <div class="filter-search" style="margin-bottom:10px;">
@@ -435,13 +439,13 @@
     function switchTab(tab) {
       document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
-      ['orders', 'addorder', 'whatsapp', 'email', 'mediators', 'buyers', 'highlights', 'settings'].forEach(s => {
+      ['orders', 'addorder', 'whatsapp', 'email', 'mediators', 'buyers', 'payments', 'highlights', 'settings'].forEach(s => {
         const el = document.getElementById(s + 'Section'); if (el) el.classList.toggle('hidden', s !== tab);
       });
       if (tab === 'addorder') { loadNextOrderNo(); populateOrderSelects(); }
       if (tab === 'whatsapp' || tab === 'email') populateOrderSelects();
       if (tab === 'highlights') loadHighlightsList();
-      if (tab === 'buyers') searchPayments();
+      if (tab === 'payments' || tab === 'buyers') searchPayments();
     }
 
     async function init() { await refreshDropdowns(); loadStats(); loadAllOrders(); loadMediators(); loadBuyers(); loadNextOrderNo(); populateFilterDropdowns(); }
@@ -517,7 +521,6 @@
       const mediatorName = document.getElementById('mediatorFilter').value;
       const parentId = document.getElementById('parentFilter').value;
       const paymentFilter = document.querySelector('input[name="paymentFilter"]:checked').value;
-      // Get all checked status filters
       const statusFilters = Array.from(document.querySelectorAll('input[name="statusFilter"]:checked')).map(cb => cb.value);
 
       try {
@@ -529,8 +532,29 @@
         if (r.success) {
           allOrders = r.orders || [];
           renderOrders(allOrders);
+          if (mediatorName !== 'all' || parentId !== 'all') showFilterStats(allOrders);
+          else document.getElementById('filterStats').style.display = 'none';
         }
       } catch (e) {}
+    }
+
+    function showFilterStats(orders) {
+      let total = orders.length, pending = 0, totalAmount = 0, totalLess = 0, totalPending = 0;
+      orders.forEach(o => {
+        const t = o.tracking || {};
+        totalAmount += parseFloat(t.PricePaid || o.PricePaid || 0);
+        totalLess += parseFloat(t.Less || o.Less || 0);
+        if (t.PaymentStatus !== 'Paid') { pending++; totalPending += parseFloat(t.BuyerToget || t.BuyerLess || 0); }
+      });
+      const fs = document.getElementById('filterStats');
+      fs.style.display = 'grid';
+      fs.innerHTML = `
+        <div class="stat-box"><div class="val" style="color:var(--accent);">${total}</div><div class="lbl">Filtered Orders</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--yellow);">${pending}</div><div class="lbl">Pending</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--green);">${totalAmount.toLocaleString('en-IN')}</div><div class="lbl">Total Amount</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--red);font-weight:800;">₹${totalLess.toLocaleString('en-IN')}</div><div class="lbl">Less (Red)</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--orange);">₹${totalPending.toLocaleString('en-IN')}</div><div class="lbl">Pending Amt</div></div>
+      `;
     }
 
     function resetFilters() {
@@ -928,5 +952,5 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
     document.getElementById('admDate').valueAsDate = new Date();
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e379baae9f86df',t:'MTc4NDU2NjMzNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

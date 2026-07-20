@@ -254,17 +254,20 @@
       const total = r.total || 0;
       const totalLess = r.totalLess || 0;
       const totalRefund = r.totalRefund || 0;
-      let totalOrderAmt = 0, totalPending = 0;
+      let totalOrderAmt = 0, totalPendingAmt = 0;
       allOrders.forEach(o => {
         totalOrderAmt += parseFloat(o.PricePaid || 0);
-        if (o.OrderStatus !== 'Got Refund') totalPending += parseFloat(o.Less || 0);
+        // Pending = orders not yet refunded, amount = Less - already refunded
+        if (o.OrderStatus !== 'Got Refund') {
+          totalPendingAmt += parseFloat(o.Less || 0);
+        }
       });
       document.getElementById('medStats').innerHTML = `
         <div class="kpi"><div class="v" style="color:var(--accent);">${total}</div><div class="l">Total Orders</div></div>
         <div class="kpi"><div class="v" style="color:var(--green);">₹${totalOrderAmt.toLocaleString('en-IN')}</div><div class="l">Order Amount</div></div>
         <div class="kpi"><div class="v" style="color:var(--yellow);">₹${totalLess.toLocaleString('en-IN')}</div><div class="l">Total Less</div></div>
         <div class="kpi"><div class="v" style="color:var(--purple);">₹${totalRefund.toLocaleString('en-IN')}</div><div class="l">Total Refund</div></div>
-        <div class="kpi"><div class="v" style="color:var(--red);">₹${totalPending.toLocaleString('en-IN')}</div><div class="l">Pending</div></div>
+        <div class="kpi"><div class="v" style="color:var(--red);">₹${totalPendingAmt.toLocaleString('en-IN')}</div><div class="l">Yet to Receive</div><div class="l">after Less</div></div>
       `;
     }
 
@@ -292,7 +295,7 @@
           <div class="order-card">
             <div class="order-header">
               <div class="order-header-left">
-                <div class="order-id">#${o.OrderNo || ''} | ${o.OrderedPlatform || ''}</div>
+                <div class="order-id">#${o.OrderNo || ''} | ${o.OrderedPlatform || ''} | ${o.PlatformOrderID || 'No ID'}</div>
                 <div class="order-product" title="${o.ProductName || ''}">${(o.ProductName || '').substring(0, 35)}${(o.ProductName || '').length > 35 ? '...' : ''}</div>
               </div>
               <div class="order-header-right">
@@ -344,6 +347,27 @@
     function populateQueryOrders(orders) {
       const sel = document.getElementById('queryOrder');
       sel.innerHTML = '<option value="">-- Select order --</option>' + orders.map(o => `<option value="${o.OrderNo}">#${o.OrderNo} - ${(o.ProductName||'').substring(0,30)}</option>`).join('');
+      sel.onchange = function() {
+        const orderNo = this.value;
+        if (!orderNo) { document.getElementById('queryMessage').value = ''; return; }
+        const o = orders.find(x => String(x.OrderNo) === String(orderNo));
+        if (o) {
+          document.getElementById('queryMessage').value = `Order Details:
+Order No: #${o.OrderNo}
+Platform Order ID: ${o.PlatformOrderID || 'N/A'}
+Platform: ${o.OrderedPlatform || 'N/A'}
+Account: ${o.AccountName || 'N/A'}
+Product: ${o.ProductName || 'N/A'}
+Price Paid: ₹${o.PricePaid || 0}
+Less: ₹${o.Less || 0}
+Order Status: ${o.OrderStatus || 'N/A'}
+Order Date: ${o.OrderDate || 'N/A'}
+Refund Form Date: ${o.RefundFormDate || 'N/A'}
+Refund Date: ${o.RefundDate || 'N/A'}
+
+Query: `;
+        }
+      };
     }
 
     async function submitQuery() {

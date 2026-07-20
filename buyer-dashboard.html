@@ -463,9 +463,30 @@
     }
 
     function populateQueryOrders(orders) {
-      // Already sorted descending
       const sel = document.getElementById('queryOrder');
       sel.innerHTML = '<option value="">-- Select order --</option>' + orders.map(o => `<option value="${o.OrderNo}">#${o.OrderNo} - ${(o.ProductName || '').substring(0, 40)}</option>`).join('');
+      sel.onchange = function() {
+        const orderNo = this.value;
+        if (!orderNo) { document.getElementById('queryMessage').value = ''; return; }
+        const o = orders.find(x => String(x.OrderNo) === String(orderNo));
+        if (o) {
+          document.getElementById('queryMessage').value = `Order Details:
+Order No: #${o.OrderNo}
+Platform Order ID: ${o.PlatformOrderID || 'N/A'}
+Platform: ${o.OrderedPlatform || 'N/A'}
+Account: ${o.AccountName || 'N/A'}
+Product: ${o.ProductName || 'N/A'}
+Price Paid: ₹${o.PricePaid || 0}
+Less: ₹${o.BuyerLess || o.Less || 0}
+To Get: ₹${o.BuyerToget || 0}
+Received: ₹${o.BuyerActualGot || 0}
+Order Status: ${o.OrderStatus || 'N/A'}
+Payment Status: ${o.PaymentStatus || 'N/A'}
+Order Date: ${o.OrderDate || 'N/A'}
+
+Query: `;
+        }
+      };
     }
 
     function openQueryForOrder(orderNo) { document.getElementById('queryOrder').value = orderNo; switchSection('query'); }
