@@ -343,6 +343,10 @@
           </div>
           <div class="info-grid">
             <div class="info-item">
+              <label>Order No</label>
+              <span style="color:var(--accent);font-weight:700;">#${t.OrderNo || '—'}</span>
+            </div>
+            <div class="info-item">
               <label>Platform</label>
               <span>${t.OrderedPlatform || '—'}</span>
             </div>
@@ -352,7 +356,7 @@
             </div>
             <div class="info-item">
               <label>Product</label>
-              <span>${t.ProductName || '—'}</span>
+              <span title="${t.ProductName || ''}">${(t.ProductName || '').substring(0, 40)}${(t.ProductName || '').length > 40 ? '...' : ''}</span>
             </div>
             <div class="info-item">
               <label>Platform Order ID</label>
@@ -369,10 +373,6 @@
             <div class="info-item">
               <label>Review Link</label>
               <span>${t.ReviewLink ? `<a href="${t.ReviewLink}" target="_blank" style="color:var(--accent);">View</a>` : '—'}</span>
-            </div>
-            <div class="info-item">
-              <label>Mediator</label>
-              <span>${t.MediatorName || '—'}</span>
             </div>
             ${refundDaysHtml}
           </div>
@@ -396,5 +396,5 @@
     }
     checkSession();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e960cacd047a00',t:'MTc4NDYyODIzMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
