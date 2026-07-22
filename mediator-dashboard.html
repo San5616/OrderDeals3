@@ -43,9 +43,9 @@
 
     /* KPI */
     .kpi-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; flex: 1; min-width: 80px; text-align: center; }
-    .kpi .v { font-size: 15px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
-    .kpi .l { font-size: 8px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; flex: 1; min-width: 80px; text-align: center; overflow: hidden; }
+    .kpi .v { font-size: 13px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1.1; word-break: break-all; }
+    .kpi .l { font-size: 8px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 2px; line-height: 1.2; }
 
     /* Loading */
     .loading-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center; }
@@ -429,5 +429,5 @@ Query: `;
 
     loadOrders();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e962119a20d854',t:'MTc4NDYyODI4Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

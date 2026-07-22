@@ -196,8 +196,9 @@
       <button class="admin-tab" onclick="switchTab('mediators')" id="tab-mediators"> Mediators</button>
       <button class="admin-tab" onclick="switchTab('buyers')" id="tab-buyers">👥 Buyers</button>
       <button class="admin-tab" onclick="switchTab('highlights')" id="tab-highlights">📢 Highlights</button>
+      <button class="admin-tab" onclick="switchTab('deals')" id="tab-deals">🔥 Deals</button>
       <button class="admin-tab" onclick="switchTab('payments')" id="tab-payments">💰 Payments</button>
-      <button class="admin-tab" onclick="switchTab('settings')" id="tab-settings">️</button>
+      <button class="admin-tab" onclick="switchTab('settings')" id="tab-settings">⚙️</button>
     </div>
 
     <div class="stats-row" id="adminStats"></div>
@@ -250,12 +251,25 @@
         <div class="filter-actions" style="margin-top:8px;">
           <button class="btn-refresh" onclick="loadAllOrders()">🔄 Refresh</button>
           <button class="btn-reset" onclick="resetFilters()"> Reset</button>
+          <button id="adminViewToggle" onclick="toggleAdminView()" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;"> Table View</button>
           <button onclick="exportAdminData('csv')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;"> Export CSV</button>
           <button onclick="exportAdminData('xls')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;"> Export XLS</button>
         </div>
       </div>
-      <div class="order-list" id="orderList"></div>
-      <div id="ordersEmpty" class="empty-state hidden">No orders found</div>
+      <div id="adminCardView">
+        <div class="order-list" id="orderList"></div>
+        <div id="ordersEmpty" class="empty-state hidden">No orders found</div>
+      </div>
+      <div id="adminTableView" style="display:none;">
+        <div class="card">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Platform</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Payment</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Actions</th></tr></thead>
+              <tbody id="adminTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ADD ORDER -->
@@ -372,6 +386,28 @@
       <div class="card"><h3>Buyers</h3><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Email</th><th>Parent</th></tr></thead><tbody id="buyersBody"></tbody></table></div></div>
     </div>
 
+    <!-- DEALS -->
+    <div id="dealsSection" class="hidden">
+      <div class="card">
+        <h3>🔥 Add New Deal</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Title *</label><input type="text" id="dealTitle" placeholder="Deal title"></div>
+          <div class="form-group"><label>Platform *</label><select id="dealPlatform"><option value="">Select</option></select></div>
+          <div class="form-group"><label>Product URL</label><input type="url" id="dealUrl" placeholder="https://..."></div>
+          <div class="form-group"><label>Price (₹) *</label><input type="number" id="dealPrice" placeholder="0"></div>
+          <div class="form-group"><label>Less Amount (₹)</label><input type="number" id="dealLess" placeholder="0"></div>
+          <div class="form-group"><label>Status</label><select id="dealStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+        </div>
+        <div class="form-group"><label>Instructions</label><textarea id="dealInstructions" rows="3" placeholder="Deal instructions..."></textarea></div>
+        <div class="form-group"><label>Image URL</label><input type="url" id="dealImage" placeholder="https://... (optional)"></div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="addDeal()">Add Deal</button></div>
+      </div>
+      <div class="card">
+        <h3>Active Deals</h3>
+        <div id="dealsList"></div>
+      </div>
+    </div>
+
     <!-- PAYMENTS -->
     <div id="paymentsSection" class="hidden">
       <div class="card">
@@ -439,12 +475,13 @@
     function switchTab(tab) {
       document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
-      ['orders', 'addorder', 'whatsapp', 'email', 'mediators', 'buyers', 'payments', 'highlights', 'settings'].forEach(s => {
+      ['orders', 'addorder', 'whatsapp', 'email', 'mediators', 'buyers', 'deals', 'payments', 'highlights', 'settings'].forEach(s => {
         const el = document.getElementById(s + 'Section'); if (el) el.classList.toggle('hidden', s !== tab);
       });
       if (tab === 'addorder') { loadNextOrderNo(); populateOrderSelects(); }
       if (tab === 'whatsapp' || tab === 'email') populateOrderSelects();
       if (tab === 'highlights') loadHighlightsList();
+      if (tab === 'deals') { loadDealsList(); populateDealPlatform(); }
       if (tab === 'payments' || tab === 'buyers') searchPayments();
     }
 
@@ -488,7 +525,9 @@
     function daysAgo(dateStr) { if(!dateStr)return''; const d=new Date(dateStr),n=new Date(),diff=Math.floor((n-d)/(1000*60*60*24)); if(diff===0)return'(today)'; if(diff===1)return'(1 day ago)'; return`(${diff} days ago)`; }
 
     async function loadAllOrders() {
+      showLoading();
       try { const r = await apiCall('searchOrders', { filter: 'all', paymentFilter: 'all' }); if(r.success) { allOrders = r.orders || []; searchOrders(); } } catch(e){}
+      hideLoading();
     }
 
     // Populate mediator and parent dropdowns
@@ -516,6 +555,7 @@
     }
 
     async function searchOrders() {
+      showLoading();
       const query = document.getElementById('searchInput').value.trim();
       const filterType = document.getElementById('filterType').value;
       const mediatorName = document.getElementById('mediatorFilter').value;
@@ -532,10 +572,12 @@
         if (r.success) {
           allOrders = r.orders || [];
           renderOrders(allOrders);
+          if (adminViewMode === 'table') renderAdminTable(allOrders);
           if (mediatorName !== 'all' || parentId !== 'all') showFilterStats(allOrders);
           else document.getElementById('filterStats').style.display = 'none';
         }
       } catch (e) {}
+      hideLoading();
     }
 
     function showFilterStats(orders) {
@@ -599,7 +641,7 @@
           <div class="order-card" id="order-${idx}">
             <div class="order-header">
               <div class="order-header-left">
-                <div class="order-id">ID: ${t.PlatformOrderID||o.OrderNo||''} <button class="copy-icon-sm" onclick="copyText('${t.PlatformOrderID||o.OrderNo||''}')" title="Copy ID">📋</button></div>
+                <div class="order-id">#${o.OrderNo||''} | ${t.PlatformOrderID||''} <button class="copy-icon-sm" onclick="copyText('${t.PlatformOrderID||o.OrderNo||''}')" title="Copy ID">📋</button></div>
                 <div class="order-product-full" title="${t.ProductName||''}">${t.ProductName||'Product'}</div>
                 <div class="order-meta-line">${t.OrderedPlatform||''} | ${t.AccountName||''} | Mediator: ${t.MediatorName||'—'} | ₹${t.PricePaid||0}</div>
               </div>
@@ -651,6 +693,38 @@
     function toggleDetails(idx) { document.getElementById('details-'+idx).classList.toggle('open'); document.getElementById('arrow-'+idx).parentElement.classList.toggle('open'); }
     function toggleTimeline(idx) { document.getElementById('timeline-'+idx).classList.toggle('open'); }
 
+    let adminViewMode = 'card';
+    function toggleAdminView() {
+      adminViewMode = adminViewMode === 'card' ? 'table' : 'card';
+      document.getElementById('adminCardView').style.display = adminViewMode === 'card' ? 'block' : 'none';
+      document.getElementById('adminTableView').style.display = adminViewMode === 'table' ? 'block' : 'none';
+      document.getElementById('adminViewToggle').textContent = adminViewMode === 'card' ? ' Table View' : '📋 Card View';
+      if (adminViewMode === 'table') renderAdminTable(allOrders);
+    }
+
+    function renderAdminTable(orders) {
+      const tbody = document.getElementById('adminTableBody');
+      if (!orders.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:20px;">No orders found</td></tr>'; return; }
+      tbody.innerHTML = orders.map((o, idx) => {
+        const t = o.tracking || {};
+        const payColor = t.PaymentStatus === 'Paid' ? 'var(--green)' : 'var(--yellow)';
+        const payText = t.PaymentStatus === 'Paid' ? '✅ Paid' : '⏳ Pending';
+        return `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:7px 8px;font-weight:600;color:var(--accent);">#${o.OrderNo||''}</td>
+          <td style="padding:7px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;">${t.PlatformOrderID||'—'}</td>
+          <td style="padding:7px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${t.ProductName||''}">${(t.ProductName||'').substring(0,20)}${(t.ProductName||'').length>20?'...':''}</td>
+          <td style="padding:7px 8px;">${t.OrderedPlatform||'—'}</td>
+          <td style="padding:7px 8px;font-weight:600;">₹${t.PricePaid||0}</td>
+          <td style="padding:7px 8px;font-weight:600;color:var(--red);">${o.Less||0}</td>
+          <td style="padding:7px 8px;">${statusBadge(t.OrderStatus||'Order Placed')}</td>
+          <td style="padding:7px 8px;color:${payColor};font-weight:600;">${payText}</td>
+          <td style="padding:7px 8px;">
+            <button style="padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;" onclick="editTracking(${o.OrderNo||t.OrderNo})">Edit</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
     function copyText(text) { navigator.clipboard.writeText(text).then(()=>showToast('Copied: '+text,'success')); }
     function copyStatus(idx) {
       const o = allOrders[idx], t = o.tracking||{};
@@ -659,59 +733,91 @@
     }
 
     // Edit Status
-    function editOrderStatus(orderNo) {
+    // Edit Status - Pre-populates with current data
+    async function editOrderStatus(orderNo) {
       currentEditOrder = orderNo;
-      document.getElementById('modalTitle').textContent = 'Edit Status #' + orderNo;
+      document.getElementById('modalTitle').textContent = 'Update Status #' + orderNo;
+
+      let currentData = {};
+      try {
+        const r = await apiCall('getOrderByPlatformID', { platformOrderId: orderNo });
+        if (r.success && r.order) currentData = r.order.tracking || r.order;
+      } catch(e) {}
+
       document.getElementById('modalContent').innerHTML = `
-        <div class="form-group"><label>Status</label><select id="editStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}">${s}</option>`).join('')}</select></div>
-        <div class="form-group"><label>Review Link</label><input type="url" id="editReviewLink"></div>
-        <div class="form-group"><label>Actual Got</label><input type="number" id="editActualGot"></div>
-        <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="editBuyerActualGot"></div>
-        <div class="btn-row"><button class="btn btn-success" onclick="saveStatus()">Save</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
+        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">Edit only the fields you want to change. Unchanged fields will remain as-is.</div>
+        <div class="form-group"><label>Status</label><select id="editStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}" ${currentData.OrderStatus===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Review Link</label><input type="url" id="editReviewLink" value="${currentData.ReviewLink||''}"></div>
+        <div class="form-group"><label>Actual Got</label><input type="number" id="editActualGot" value="${currentData.ActualGot||''}"></div>
+        <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="editBuyerActualGot" value="${currentData.BuyerActualGot||''}"></div>
+        <div class="btn-row"><button class="btn btn-success" onclick="saveStatus()">Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
       openModal();
     }
     async function saveStatus() {
       try { const r=await apiCall('updateOrderStatus',{orderNo:currentEditOrder,orderStatus:document.getElementById('editStatus').value,additionalData:{ReviewLink:document.getElementById('editReviewLink').value,ActualGot:document.getElementById('editActualGot').value,BuyerActualGot:document.getElementById('editBuyerActualGot').value}}); if(r.success){showToast('Status updated!','success');closeModal();loadAllOrders();loadStats();} else showToast(r.error||'Failed','error'); } catch(e){showToast('Error','error');}
     }
 
-    // Edit Payment
-    function editPayment(orderNo) {
+    // Edit Payment - Pre-populates with current data
+    async function editPayment(orderNo) {
       currentEditOrder = orderNo;
-      document.getElementById('modalTitle').textContent = 'Edit Payment #' + orderNo;
+      document.getElementById('modalTitle').textContent = 'Update Payment #' + orderNo;
+
+      let currentData = {};
+      try {
+        const r = await apiCall('getOrderByPlatformID', { platformOrderId: orderNo });
+        if (r.success && r.order) currentData = r.order.tracking || r.order;
+      } catch(e) {}
+
+      const toDate = (d) => d ? new Date(d).toISOString().split('T')[0] : (new Date().toISOString().split('T')[0]);
+
       document.getElementById('modalContent').innerHTML = `
-        <div class="form-group"><label>Status</label><select id="editPayStatus"><option value="Pending payment">Pending</option><option value="Paid">Paid</option></select></div>
-        <div class="form-group"><label>Method</label><select id="editPayMethod"><option>UPI</option><option>Bank Transfer</option><option>Paytm</option><option>PhonePe</option><option>Google Pay</option><option>Cash</option></select></div>
-        <div class="form-group"><label>Date</label><input type="date" id="editPayDate" value="${new Date().toISOString().split('T')[0]}"></div>
-        <div class="form-group"><label>Actual Got</label><input type="number" id="editPayActualGot"></div>
-        <div class="form-group"><label>Buyer Got</label><input type="number" id="editPayBuyerGot"></div>
-        <div class="form-group"><label>Notes</label><textarea id="editPayNotes"></textarea></div>
-        <div class="btn-row"><button class="btn btn-success" onclick="savePayment()">Save</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
+        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">Edit only the fields you want to change. Unchanged fields will remain as-is.</div>
+        <div class="form-group"><label>Status</label><select id="editPayStatus"><option value="Pending payment" ${currentData.PaymentStatus==='Pending payment'?'selected':''}>Pending</option><option value="Paid" ${currentData.PaymentStatus==='Paid'?'selected':''}>Paid</option></select></div>
+        <div class="form-group"><label>Method</label><select id="editPayMethod"><option ${currentData.PaymentMethod==='UPI'?'selected':''}>UPI</option><option ${currentData.PaymentMethod==='Bank Transfer'?'selected':''}>Bank Transfer</option><option ${currentData.PaymentMethod==='Paytm'?'selected':''}>Paytm</option><option ${currentData.PaymentMethod==='PhonePe'?'selected':''}>PhonePe</option><option ${currentData.PaymentMethod==='Google Pay'?'selected':''}>Google Pay</option><option ${currentData.PaymentMethod==='Cash'?'selected':''}>Cash</option></select></div>
+        <div class="form-group"><label>Date</label><input type="date" id="editPayDate" value="${toDate(currentData.PaymentDate)}"></div>
+        <div class="form-group"><label>Actual Got</label><input type="number" id="editPayActualGot" value="${currentData.ActualGot||''}"></div>
+        <div class="form-group"><label>Buyer Got</label><input type="number" id="editPayBuyerGot" value="${currentData.BuyerActualGot||''}"></div>
+        <div class="form-group"><label>Notes</label><textarea id="editPayNotes">${currentData.Notes||''}</textarea></div>
+        <div class="btn-row"><button class="btn btn-success" onclick="savePayment()">Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
       openModal();
     }
     async function savePayment() {
       try { const r=await apiCall('updatePaymentStatus',{orderNo:currentEditOrder,paymentStatus:document.getElementById('editPayStatus').value,paymentMethod:document.getElementById('editPayMethod').value,paymentDate:document.getElementById('editPayDate').value,actualGot:document.getElementById('editPayActualGot').value,buyerActualGot:document.getElementById('editPayBuyerGot').value,notes:document.getElementById('editPayNotes').value}); if(r.success){showToast('Payment updated!','success');closeModal();loadAllOrders();loadStats();} else showToast(r.error||'Failed','error'); } catch(e){showToast('Error','error');}
     }
 
-    // Edit Tracking
-    function editTracking(orderNo) {
+    // Edit Tracking - Pre-populates with current data, partial updates
+    async function editTracking(orderNo) {
       currentEditOrder = orderNo;
-      document.getElementById('modalTitle').textContent = 'Edit Tracking #' + orderNo;
+      document.getElementById('modalTitle').textContent = 'Update Tracking #' + orderNo;
+
+      // Fetch current order data
+      let currentData = {};
+      try {
+        const r = await apiCall('getOrderByPlatformID', { platformOrderId: orderNo });
+        if (r.success && r.order) {
+          currentData = r.order.tracking || r.order;
+        }
+      } catch(e) {}
+
+      const toDate = (d) => d ? new Date(d).toISOString().split('T')[0] : '';
+
       document.getElementById('modalContent').innerHTML = `
-        <div class="form-group"><label>Order Status</label><select id="trkStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}">${s}</option>`).join('')}</select></div>
-        <div class="form-group"><label>Order Date</label><input type="date" id="trkOrderDate"></div>
-        <div class="form-group"><label>Delivery Date</label><input type="date" id="trkDeliveryDate"></div>
-        <div class="form-group"><label>Review Date</label><input type="date" id="trkReviewDate"></div>
-        <div class="form-group"><label>Review Live Date</label><input type="date" id="trkReviewLiveDate"></div>
-        <div class="form-group"><label>Refund Form Date</label><input type="date" id="trkRefundFormDate"></div>
-        <div class="form-group"><label>Refund Date</label><input type="date" id="trkRefundDate"></div>
-        <div class="form-group"><label>Review Link</label><input type="url" id="trkReviewLink"></div>
-        <div class="form-group"><label>Actual Got</label><input type="number" id="trkActualGot"></div>
-        <div class="form-group"><label>Buyer To Get</label><input type="number" id="trkBuyerToGet"></div>
-        <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="trkBuyerActualGot"></div>
-        <div class="form-group"><label>Payment Status</label><select id="trkPayStatus"><option value="Pending payment">Pending</option><option value="Paid">Paid</option></select></div>
-        <div class="form-group"><label>Payment Method</label><select id="trkPayMethod"><option>UPI</option><option>Bank Transfer</option><option>Paytm</option><option>PhonePe</option><option>Google Pay</option><option>Cash</option></select></div>
-        <div class="form-group"><label>Payment Date</label><input type="date" id="trkPayDate"></div>
-        <div class="btn-row"><button class="btn btn-success" onclick="saveTracking()">Save All</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
+        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">Edit only the fields you want to change. Unchanged fields will remain as-is.</div>
+        <div class="form-group"><label>Order Status</label><select id="trkStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}" ${currentData.OrderStatus===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Order Date</label><input type="date" id="trkOrderDate" value="${toDate(currentData.OrderDate)}"></div>
+        <div class="form-group"><label>Delivery Date</label><input type="date" id="trkDeliveryDate" value="${toDate(currentData.DeliveryDate)}"></div>
+        <div class="form-group"><label>Review Date</label><input type="date" id="trkReviewDate" value="${toDate(currentData.ReviewDate)}"></div>
+        <div class="form-group"><label>Review Live Date</label><input type="date" id="trkReviewLiveDate" value="${toDate(currentData.ReviewLiveDate)}"></div>
+        <div class="form-group"><label>Refund Form Date</label><input type="date" id="trkRefundFormDate" value="${toDate(currentData.RefundFormDate)}"></div>
+        <div class="form-group"><label>Refund Date</label><input type="date" id="trkRefundDate" value="${toDate(currentData.RefundDate)}"></div>
+        <div class="form-group"><label>Review Link</label><input type="url" id="trkReviewLink" value="${currentData.ReviewLink||''}"></div>
+        <div class="form-group"><label>Actual Got</label><input type="number" id="trkActualGot" value="${currentData.ActualGot||''}"></div>
+        <div class="form-group"><label>Buyer To Get</label><input type="number" id="trkBuyerToGet" value="${currentData.BuyerToget||''}"></div>
+        <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="trkBuyerActualGot" value="${currentData.BuyerActualGot||''}"></div>
+        <div class="form-group"><label>Payment Status</label><select id="trkPayStatus"><option value="Pending payment" ${currentData.PaymentStatus==='Pending payment'?'selected':''}>Pending</option><option value="Paid" ${currentData.PaymentStatus==='Paid'?'selected':''}>Paid</option></select></div>
+        <div class="form-group"><label>Payment Method</label><select id="trkPayMethod"><option ${currentData.PaymentMethod==='UPI'?'selected':''}>UPI</option><option ${currentData.PaymentMethod==='Bank Transfer'?'selected':''}>Bank Transfer</option><option ${currentData.PaymentMethod==='Paytm'?'selected':''}>Paytm</option><option ${currentData.PaymentMethod==='PhonePe'?'selected':''}>PhonePe</option><option ${currentData.PaymentMethod==='Google Pay'?'selected':''}>Google Pay</option><option ${currentData.PaymentMethod==='Cash'?'selected':''}>Cash</option></select></div>
+        <div class="form-group"><label>Payment Date</label><input type="date" id="trkPayDate" value="${toDate(currentData.PaymentDate)}"></div>
+        <div class="btn-row"><button class="btn btn-success" onclick="saveTracking()">Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
       openModal();
     }
     async function saveTracking() {
@@ -949,8 +1055,62 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
       try { const r = await apiCall('deleteHighlight', { rowIndex }); if (r.success) { showToast('Deleted', 'success'); loadHighlightsList(); } } catch (e) {}
     }
 
+    // Deals management
+    function populateDealPlatform() {
+      const sel = document.getElementById('dealPlatform');
+      if (dropdownData.platforms) {
+        sel.innerHTML = '<option value="">Select</option>' + dropdownData.platforms.map(p => `<option value="${p}">${p}</option>`).join('');
+      }
+    }
+
+    async function addDeal() {
+      const title = document.getElementById('dealTitle').value.trim();
+      const platform = document.getElementById('dealPlatform').value;
+      const price = document.getElementById('dealPrice').value;
+      if (!title || !platform || !price) { showToast('Fill title, platform and price', 'warning'); return; }
+      try {
+        const r = await apiCall('addDeal', {
+          title, platform,
+          product_url: document.getElementById('dealUrl').value.trim(),
+          price: parseFloat(price),
+          less_amount: parseFloat(document.getElementById('dealLess').value) || 0,
+          instructions: document.getElementById('dealInstructions').value.trim(),
+          image_url: document.getElementById('dealImage').value.trim(),
+          status: document.getElementById('dealStatus').value
+        });
+        if (r.success) {
+          showToast('Deal added!', 'success');
+          ['dealTitle','dealUrl','dealPrice','dealLess','dealInstructions','dealImage'].forEach(id => document.getElementById(id).value = '');
+          loadDealsList();
+        } else showToast(r.error || 'Failed', 'error');
+      } catch (e) { showToast('Error', 'error'); }
+    }
+
+    async function loadDealsList() {
+      try {
+        const r = await apiCall('getDeals', { admin: true });
+        const list = document.getElementById('dealsList');
+        if (r.success && r.deals.length > 0) {
+          list.innerHTML = r.deals.map(d => `
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:13px;font-weight:700;">${d.title}</div>
+                <div style="font-size:11px;color:var(--text2);">${d.platform} | ₹${d.price} | Less: ₹${d.lessAmount||0} | ${d.status}</div>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="deleteDeal('${d.dealId}')">Delete</button>
+            </div>
+          `).join('');
+        } else { list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">No deals yet</div>'; }
+      } catch (e) {}
+    }
+
+    async function deleteDeal(dealId) {
+      if (!confirm('Delete this deal?')) return;
+      try { const r = await apiCall('deleteDeal', { dealId }); if (r.success) { showToast('Deleted', 'success'); loadDealsList(); } } catch (e) {}
+    }
+
     document.getElementById('admDate').valueAsDate = new Date();
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e96101b8357a00',t:'MTc4NDYyODIzOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

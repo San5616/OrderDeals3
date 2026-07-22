@@ -163,14 +163,13 @@
 
   <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 
-  <!-- Highlights Banner -->
-  <div class="highlight-banner" id="highlightBanner" style="display:none;">
-    <h4 id="highlightTitle">📢 Announcement</h4>
-    <p id="highlightText"></p>
-    <div class="hl-date" id="highlightDate"></div>
-  </div>
-
   <div class="main-content">
+    <!-- Highlights Banner -->
+    <div class="highlight-banner" id="highlightBanner" style="display:none;">
+      <h4 id="highlightTitle">📢 Announcement</h4>
+      <p id="highlightText"></p>
+      <div class="hl-date" id="highlightDate"></div>
+    </div>
     <div class="dash-tabs">
       <button class="dash-tab active" onclick="switchSection('orders')" id="sec-orders">📦 Orders</button>
       <button class="dash-tab" onclick="switchSection('deals')" id="sec-deals">🔥 Deals</button>
@@ -198,12 +197,25 @@
           <label><input type="radio" name="showOnly" value="Got Refund" onchange="applyFilters()"> Refunded</label>
           <label><input type="radio" name="showOnly" value="Refund form filled" onchange="applyFilters()"> Form Filled</label>
         </div>
-        <div style="display:flex;gap:6px;margin-top:8px;">
+        <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
+          <button id="viewToggleBtn" onclick="toggleBuyerView()" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;"> Table View</button>
           <button onclick="exportData('csv')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;"> Export CSV</button>
-          <button onclick="exportData('xls')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;">📊 Export XLS</button>
+          <button onclick="exportData('xls')" style="padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;"> Export XLS</button>
         </div>
       </div>
-      <div class="order-list" id="orderList"></div>
+      <div id="buyerCardView">
+        <div class="order-list" id="orderList"></div>
+      </div>
+      <div id="buyerTableView" style="display:none;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--card-shadow);">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Platform</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Payment</th></tr></thead>
+              <tbody id="buyerTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Deals -->
@@ -393,7 +405,7 @@
             <div class="order-header">
               <div class="order-header-left">
                 <div class="order-id-row">
-                  <span class="order-id">${o.PlatformOrderID || o.OrderNo || ''}</span>
+                  <span class="order-id">#${o.OrderNo || ''} | ${o.PlatformOrderID || ''}</span>
                   <button class="copy-icon" onclick="copyText('${o.PlatformOrderID || o.OrderNo || ''}')" title="Copy ID">📋</button>
                 </div>
                 <div class="order-product" title="${o.ProductName || ''}">${o.ProductName || 'Product'}</div>
@@ -442,6 +454,34 @@
     function toggleDetails(idx) { document.getElementById('details-' + idx).classList.toggle('open'); document.getElementById('arrow-' + idx).parentElement.classList.toggle('open'); }
     function toggleTimeline(idx) { document.getElementById('timeline-' + idx).classList.toggle('open'); }
 
+    let buyerViewMode = 'card';
+    function toggleBuyerView() {
+      buyerViewMode = buyerViewMode === 'card' ? 'table' : 'card';
+      document.getElementById('buyerCardView').style.display = buyerViewMode === 'card' ? 'block' : 'none';
+      document.getElementById('buyerTableView').style.display = buyerViewMode === 'table' ? 'block' : 'none';
+      document.getElementById('viewToggleBtn').textContent = buyerViewMode === 'card' ? ' Table View' : '📋 Card View';
+      if (buyerViewMode === 'table') renderBuyerTable(filteredOrders);
+    }
+
+    function renderBuyerTable(orders) {
+      const tbody = document.getElementById('buyerTableBody');
+      if (!orders.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px;">No orders found</td></tr>'; return; }
+      tbody.innerHTML = orders.map((o, idx) => {
+        const payColor = o.PaymentStatus === 'Paid' ? 'var(--green)' : 'var(--yellow)';
+        const payText = o.PaymentStatus === 'Paid' ? '✅ Paid' : '⏳ Pending';
+        return `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:7px 8px;font-weight:600;color:var(--accent);">#${o.OrderNo || ''}</td>
+          <td style="padding:7px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;">${o.PlatformOrderID || '—'}</td>
+          <td style="padding:7px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${o.ProductName || ''}">${(o.ProductName || '').substring(0, 25)}${(o.ProductName || '').length > 25 ? '...' : ''}</td>
+          <td style="padding:7px 8px;">${o.OrderedPlatform || '—'}</td>
+          <td style="padding:7px 8px;font-weight:600;">₹${o.PricePaid || 0}</td>
+          <td style="padding:7px 8px;font-weight:600;color:var(--red);">₹${o.BuyerLess || o.Less || 0}</td>
+          <td style="padding:7px 8px;">${statusBadge(o.OrderStatus || 'Order Placed')}</td>
+          <td style="padding:7px 8px;color:${payColor};font-weight:600;">${payText}</td>
+        </tr>`;
+      }).join('');
+    }
+
     function applyFilters() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const filterType = document.getElementById('filterType').value;
@@ -460,6 +500,7 @@
         return o.OrderStatus === showOnly;
       });
       renderOrders(filteredOrders);
+      if (buyerViewMode === 'table') renderBuyerTable(filteredOrders);
     }
 
     function populateQueryOrders(orders) {
@@ -603,5 +644,5 @@ Platform ID: ${o.PlatformOrderID}`;
     document.getElementById('newDate').valueAsDate = new Date();
     loadData();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e9623a3955d854',t:'MTc4NDYyODI4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1f43028bd037a19',t:'MTc4NDc0MTU4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
