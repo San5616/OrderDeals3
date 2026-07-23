@@ -46,12 +46,12 @@
     .admin-tab { padding: 7px 12px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; border: none; background: transparent; color: var(--text3); }
     .admin-tab.active { background: var(--accent); color: white; }
 
-    /* Stats */
-    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
-    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 10px; box-shadow: var(--card-shadow); }
-    .stat-box .val { font-size: 17px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
-    .stat-box .lbl { font-size: 9px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
-    .stat-box .icon-sm { font-size: 14px; margin-bottom: 4px; }
+    /* Stats - single row, compact */
+    .stats-row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-bottom: 12px; }
+    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 6px; box-shadow: var(--card-shadow); text-align: center; }
+    .stat-box .val { font-size: 14px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+    .stat-box .lbl { font-size: 8px; color: var(--text3); font-weight: 600; text-transform: uppercase; margin-top: 3px; }
+    .stat-box .icon-sm { font-size: 12px; margin-bottom: 2px; }
 
     /* Filter bar */
     .filter-bar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 12px; box-shadow: var(--card-shadow); }
@@ -197,6 +197,7 @@
       <button class="admin-tab" onclick="switchTab('buyers')" id="tab-buyers">👥 Buyers</button>
       <button class="admin-tab" onclick="switchTab('highlights')" id="tab-highlights">📢 Highlights</button>
       <button class="admin-tab" onclick="switchTab('deals')" id="tab-deals">🔥 Deals</button>
+      <button class="admin-tab" onclick="switchTab('requests')" id="tab-requests">📬 Requests</button>
       <button class="admin-tab" onclick="switchTab('payments')" id="tab-payments">💰 Payments</button>
       <button class="admin-tab" onclick="switchTab('settings')" id="tab-settings">⚙️</button>
     </div>
@@ -210,6 +211,7 @@
         <div class="filter-search">
           <select id="filterType">
             <option value="id">Order ID</option>
+            <option value="orderno">Order No</option>
             <option value="product">Product</option>
             <option value="platform">Platform</option>
             <option value="buyer">Buyer</option>
@@ -264,7 +266,7 @@
         <div class="card">
           <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;font-size:11px;">
-              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Platform</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Payment</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Actions</th></tr></thead>
+              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Account</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Mediator</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Got</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Payment</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Actions</th></tr></thead>
               <tbody id="adminTableBody"></tbody>
             </table>
           </div>
@@ -408,6 +410,14 @@
       </div>
     </div>
 
+    <!-- DEAL REQUESTS -->
+    <div id="requestsSection" class="hidden">
+      <div class="card">
+        <h3>📬 Deal Requests from Buyers</h3>
+        <div id="requestsList"></div>
+      </div>
+    </div>
+
     <!-- PAYMENTS -->
     <div id="paymentsSection" class="hidden">
       <div class="card">
@@ -475,13 +485,14 @@
     function switchTab(tab) {
       document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
-      ['orders', 'addorder', 'whatsapp', 'email', 'mediators', 'buyers', 'deals', 'payments', 'highlights', 'settings'].forEach(s => {
+      ['orders', 'addorder', 'whatsapp', 'email', 'mediators', 'buyers', 'deals', 'requests', 'payments', 'highlights', 'settings'].forEach(s => {
         const el = document.getElementById(s + 'Section'); if (el) el.classList.toggle('hidden', s !== tab);
       });
       if (tab === 'addorder') { loadNextOrderNo(); populateOrderSelects(); }
       if (tab === 'whatsapp' || tab === 'email') populateOrderSelects();
       if (tab === 'highlights') loadHighlightsList();
       if (tab === 'deals') { loadDealsList(); populateDealPlatform(); }
+      if (tab === 'requests') loadDealRequests();
       if (tab === 'payments' || tab === 'buyers') searchPayments();
     }
 
@@ -590,12 +601,13 @@
       });
       const fs = document.getElementById('filterStats');
       fs.style.display = 'grid';
+      fs.style.gridTemplateColumns = 'repeat(5, 1fr)';
       fs.innerHTML = `
-        <div class="stat-box"><div class="val" style="color:var(--accent);">${total}</div><div class="lbl">Filtered Orders</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--accent);">${total}</div><div class="lbl">Filtered</div></div>
         <div class="stat-box"><div class="val" style="color:var(--yellow);">${pending}</div><div class="lbl">Pending</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--green);">${totalAmount.toLocaleString('en-IN')}</div><div class="lbl">Total Amount</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--red);font-weight:800;">₹${totalLess.toLocaleString('en-IN')}</div><div class="lbl">Less (Red)</div></div>
-        <div class="stat-box"><div class="val" style="color:var(--orange);">₹${totalPending.toLocaleString('en-IN')}</div><div class="lbl">Pending Amt</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--green);">${totalAmount.toLocaleString('en-IN')}</div><div class="lbl">Total Amt</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--red);font-weight:800;">₹${totalLess.toLocaleString('en-IN')}</div><div class="lbl">Less</div></div>
+        <div class="stat-box"><div class="val" style="color:var(--orange);">${totalPending.toLocaleString('en-IN')}</div><div class="lbl">Pending Amt</div></div>
       `;
     }
 
@@ -643,7 +655,7 @@
               <div class="order-header-left">
                 <div class="order-id">#${o.OrderNo||''} | ${t.PlatformOrderID||''} <button class="copy-icon-sm" onclick="copyText('${t.PlatformOrderID||o.OrderNo||''}')" title="Copy ID">📋</button></div>
                 <div class="order-product-full" title="${t.ProductName||''}">${t.ProductName||'Product'}</div>
-                <div class="order-meta-line">${t.OrderedPlatform||''} | ${t.AccountName||''} | Mediator: ${t.MediatorName||'—'} | ₹${t.PricePaid||0}</div>
+                <div class="order-meta-line">${t.OrderedPlatform||''} | <span style="color:var(--cyan);font-weight:500;">${t.AccountName||o.AccountName||''}</span> | <span style="color:var(--purple);font-weight:500;">Mediator: ${t.MediatorName||o.MediatorName||'—'}</span> | ₹${t.PricePaid||0} | <span style="color:var(--red);font-weight:600;">Less: ₹${o.Less||t.Less||0}</span></div>
               </div>
               <div class="order-header-right">
                 <div class="order-date">${t.OrderDate?formatDate(t.OrderDate):'—'} ${daysAgo(t.OrderDate)}</div>
@@ -704,18 +716,21 @@
 
     function renderAdminTable(orders) {
       const tbody = document.getElementById('adminTableBody');
-      if (!orders.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:20px;">No orders found</td></tr>'; return; }
+      if (!orders.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:20px;">No orders found</td></tr>'; return; }
       tbody.innerHTML = orders.map((o, idx) => {
         const t = o.tracking || {};
         const payColor = t.PaymentStatus === 'Paid' ? 'var(--green)' : 'var(--yellow)';
         const payText = t.PaymentStatus === 'Paid' ? '✅ Paid' : '⏳ Pending';
+        const actualGot = t.BuyerActualGot || t.ActualGot || 0;
         return `<tr style="border-bottom:1px solid var(--border);">
           <td style="padding:7px 8px;font-weight:600;color:var(--accent);">#${o.OrderNo||''}</td>
           <td style="padding:7px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;">${t.PlatformOrderID||'—'}</td>
           <td style="padding:7px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${t.ProductName||''}">${(t.ProductName||'').substring(0,20)}${(t.ProductName||'').length>20?'...':''}</td>
-          <td style="padding:7px 8px;">${t.OrderedPlatform||'—'}</td>
+          <td style="padding:7px 8px;color:var(--cyan);font-weight:500;">${t.AccountName||o.AccountName||'—'}</td>
+          <td style="padding:7px 8px;color:var(--purple);font-weight:500;">${t.MediatorName||o.MediatorName||'—'}</td>
           <td style="padding:7px 8px;font-weight:600;">₹${t.PricePaid||0}</td>
-          <td style="padding:7px 8px;font-weight:600;color:var(--red);">${o.Less||0}</td>
+          <td style="padding:7px 8px;font-weight:600;color:var(--red);">₹${o.Less||t.Less||0}</td>
+          <td style="padding:7px 8px;font-weight:600;color:var(--green);">₹${actualGot}</td>
           <td style="padding:7px 8px;">${statusBadge(t.OrderStatus||'Order Placed')}</td>
           <td style="padding:7px 8px;color:${payColor};font-weight:600;">${payText}</td>
           <td style="padding:7px 8px;">
@@ -1107,6 +1122,41 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
     async function deleteDeal(dealId) {
       if (!confirm('Delete this deal?')) return;
       try { const r = await apiCall('deleteDeal', { dealId }); if (r.success) { showToast('Deleted', 'success'); loadDealsList(); } } catch (e) {}
+    }
+
+    async function loadDealRequests() {
+      try {
+        const r = await apiCall('getDealRequests');
+        const list = document.getElementById('requestsList');
+        if (r.success && r.requests && r.requests.length > 0) {
+          list.innerHTML = r.requests.map(req => `
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:13px;font-weight:700;">${req.buyerName} requested: ${req.dealTitle}</div>
+                  <div style="font-size:11px;color:var(--text2);">Mobile: ${req.buyerMobile} | ${req.timestamp ? new Date(req.timestamp).toLocaleString() : ''}</div>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-sm btn-primary" onclick="contactBuyer('${req.buyerMobile}','${req.dealTitle}')"> Contact</button>
+                  <button class="btn btn-sm btn-outline" onclick="markRequestHandled('${req.id}')">✅ Done</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else { list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">No deal requests yet</div>'; }
+      } catch (e) { document.getElementById('requestsList').innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">Error loading requests</div>'; }
+    }
+
+    function contactBuyer(mobile, dealTitle) {
+      const msg = `Hi! Regarding your deal request for "${dealTitle}". Let me know if you're interested.`;
+      window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    async function markRequestHandled(reqId) {
+      try {
+        const r = await apiCall('markDealRequestHandled', { id: reqId });
+        if (r.success) { showToast('Marked as handled', 'success'); loadDealRequests(); }
+      } catch (e) { showToast('Error', 'error'); }
     }
 
     document.getElementById('admDate').valueAsDate = new Date();

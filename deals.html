@@ -87,8 +87,8 @@
     /* Deals Grid */
     .deals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 12px;
     }
     .deal-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -227,27 +227,30 @@
         return;
       }
 
-      grid.innerHTML = deals.map(deal => `
-        <div class="deal-card">
-          <div class="deal-image">
-            ${deal.imageUrl ? `<img src="${deal.imageUrl}" alt="${deal.title}" onerror="this.parentElement.innerHTML='📦'">` : '📦'}
+      grid.innerHTML = deals.map(deal => {
+        const youGet = deal.price && deal.lessAmount ? deal.price - deal.lessAmount : deal.price || 0;
+        return `
+        <div class="deal-card" style="display:flex;flex-direction:row;gap:12px;padding:12px;">
+          <div style="width:120px;height:120px;flex-shrink:0;border-radius:8px;overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center;">
+            ${deal.imageUrl ? `<img src="${deal.imageUrl}" alt="${deal.title}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML=''">` : '📦'}
           </div>
-          <div class="deal-body">
-            <span class="deal-platform">${deal.platform || 'Deal'}</span>
-            <h3 class="deal-title">${deal.title || 'Untitled Deal'}</h3>
-            <div class="deal-prices">
-              <span class="deal-price ${!isBuyer ? 'blurred' : ''}">₹${deal.price || 0}</span>
-              ${deal.lessAmount ? `<span class="deal-less">Save ₹${deal.lessAmount}</span>` : ''}
+          <div style="flex:1;min-width:0;">
+            <span class="deal-platform" style="margin-bottom:6px;">${deal.platform || 'Deal'}</span>
+            <h3 class="deal-title" style="font-size:14px;margin-bottom:8px;line-height:1.3;">${deal.title || 'Untitled Deal'}</h3>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <span class="deal-price ${!isBuyer ? 'blurred' : ''}" style="font-size:16px;">₹${deal.price || 0}</span>
+              ${deal.lessAmount ? `<span style="font-size:11px;color:var(--red);font-weight:600;background:rgba(220,38,38,0.1);padding:2px 6px;border-radius:4px;">Less: ₹${deal.lessAmount}</span>` : ''}
+              ${isBuyer && deal.lessAmount ? `<span style="font-size:11px;color:var(--green);font-weight:700;background:rgba(22,163,74,0.1);padding:2px 6px;border-radius:4px;">You Get: ₹${youGet}</span>` : ''}
             </div>
-            ${deal.instructions ? `<p class="deal-instructions">${deal.instructions}</p>` : ''}
-            <div class="deal-actions">
-              ${deal.productUrl ? `<a href="${deal.productUrl}" target="_blank" class="deal-btn deal-btn-primary">View Deal</a>` : ''}
-              ${isBuyer ? `<button class="deal-btn deal-btn-request" onclick="requestDeal('${deal.dealId}','${deal.title.replace(/'/g, '')}')">Request Deal</button>` : ''}
-              ${!isBuyer ? `<button class="deal-btn deal-btn-outline" onclick="window.location.href='login.html'">Login to Request</button>` : ''}
+            ${deal.instructions ? `<p class="deal-instructions" style="font-size:11px;margin-bottom:8px;">${deal.instructions}</p>` : ''}
+            <div class="deal-actions" style="display:flex;gap:6px;">
+              ${deal.productUrl ? `<a href="${deal.productUrl}" target="_blank" class="deal-btn deal-btn-primary" style="flex:1;text-align:center;">View Deal</a>` : ''}
+              ${isBuyer ? `<button class="deal-btn deal-btn-request" onclick="requestDeal('${deal.dealId}','${deal.title.replace(/'/g, '')}')" style="flex:1;">Request Deal</button>` : ''}
+              ${!isBuyer ? `<button class="deal-btn deal-btn-outline" onclick="window.location.href='login.html'" style="flex:1;">Login to Request</button>` : ''}
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
     }
 
     function filterDeals() {
@@ -282,7 +285,6 @@
         showToast('Request sent! Admin will contact you.', 'success');
       }
     }
-
     // Update nav based on login
     function checkSession() {
       const btn = document.getElementById('navLoginBtn');
@@ -301,5 +303,5 @@
     checkSession();
     loadDeals();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1c4dec0797f7a0a',t:'MTc4NDI0NTQxNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

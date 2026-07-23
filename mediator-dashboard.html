@@ -156,8 +156,9 @@
             <option value="pending">Pending Refund</option>
             <option value="done">Refunded</option>
           </select>
+          <input type="text" id="medSearchInput" placeholder="Search Order No..." oninput="filterOrders()" style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:12px;outline:none;">
           <button class="view-toggle" onclick="toggleView()" id="viewToggleBtn"> Table View</button>
-          <button class="export-btn" onclick="exportMediatorData('csv')">📥 CSV</button>
+          <button class="export-btn" onclick="exportMediatorData('csv')"> CSV</button>
           <button class="export-btn" style="background:var(--accent);" onclick="exportMediatorData('xls')"> XLS</button>
         </div>
       </div>
@@ -170,7 +171,7 @@
         <div class="card">
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>#</th><th>Platform</th><th>Product</th><th>Price</th><th>Less</th><th>Status</th><th>Refund</th><th>Days</th></tr></thead>
+              <thead><tr><th>#</th><th>Platform</th><th>Account</th><th>Product</th><th>Price</th><th>Less</th><th>Got</th><th>Refund Date</th><th>Status</th><th>Refund</th><th>Days</th></tr></thead>
               <tbody id="ordersBody"></tbody>
             </table>
           </div>
@@ -306,7 +307,9 @@
             <div class="order-info">
               <div class="info-cell"><label>Price</label><span>₹${o.PricePaid || 0}</span></div>
               <div class="info-cell"><label>Less</label><span style="color:var(--yellow);font-weight:700;">₹${o.Less || 0}</span></div>
+              <div class="info-cell"><label>Actual Got</label><span style="color:var(--green);font-weight:700;">₹${o.BuyerActualGot || o.ActualGot || 0}</span></div>
               <div class="info-cell"><label>Refund</label>${refundStatus}</div>
+              <div class="info-cell"><label>Refund Date</label><span style="font-size:10px;">${o.RefundDate ? formatDate(o.RefundDate) : '—'}</span></div>
               <div class="info-cell"><label>Days</label>${daysHtml || '—'}</div>
               <div class="info-cell"><label>Platform ID</label><span style="font-family:'JetBrains Mono',monospace;font-size:10px;">${o.PlatformOrderID || '—'}</span></div>
               <div class="info-cell"><label>Account</label><span>${o.AccountName || '—'}</span></div>
@@ -324,9 +327,12 @@
         return `<tr>
           <td style="font-weight:600;color:var(--accent);">${o.OrderNo}</td>
           <td>${o.OrderedPlatform}</td>
+          <td style="color:var(--cyan);font-weight:500;">${o.AccountName || '—'}</td>
           <td title="${o.ProductName}" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;">${(o.ProductName || '').substring(0, 20)}</td>
           <td>₹${o.PricePaid || 0}</td>
           <td style="font-weight:600;color:var(--yellow);">₹${o.Less || 0}</td>
+          <td style="font-weight:600;color:var(--green);">₹${o.BuyerActualGot || o.ActualGot || 0}</td>
+          <td style="font-size:10px;">${o.RefundDate ? formatDate(o.RefundDate) : '—'}</td>
           <td>${statusBadge(o.OrderStatus || 'Order Placed')}</td>
           <td>${refundStatus}</td>
           <td>${daysHtml || '—'}</td>
@@ -337,7 +343,9 @@
     function filterOrders() {
       const status = document.getElementById('statusFilter').value;
       const refund = document.getElementById('refundFilter').value;
+      const search = (document.getElementById('medSearchInput')?.value || '').toLowerCase();
       let filtered = allOrders;
+      if (search) filtered = filtered.filter(o => String(o.OrderNo || '').toLowerCase().includes(search));
       if (status) filtered = filtered.filter(o => o.OrderStatus === status);
       if (refund === 'pending') filtered = filtered.filter(o => o.OrderStatus !== 'Got Refund');
       if (refund === 'done') filtered = filtered.filter(o => o.OrderStatus === 'Got Refund');
