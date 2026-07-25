@@ -8,7 +8,7 @@
 
 const CONFIG = {
   // Google Apps Script Web App URL (paste after deploying)
-  API_URL: "https://script.google.com/macros/s/AKfycbxVOmNHntcy95qiPfH69sc6CduSI72zSwSd5I-JM2RcAIkQCIXd9yhFRczzY67xup0a/exec",
+  API_URL: "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE",
 
   // Session key names (not secret — just storage keys)
   SESSION_USER: "sastadeal_user",
@@ -21,7 +21,15 @@ const CONFIG = {
   // App info (public)
   APP_NAME: "SastaDeal",
   APP_VERSION: "1.0.0",
-  GITHUB_REPO: "https://github.com/San5616/OrderDeals3"
+  GITHUB_REPO: "https://github.com/San5616/OrderDeals3",
+
+  // Theme colors (creamy yellowish instead of blue)
+  THEME: {
+    accent: "#d4a574",      // Creamy brown/yellow
+    accentHover: "#c4956a",  // Darker creamy
+    accentGlow: "rgba(212, 165, 116, 0.15)",
+    accentDark: "#8b6f47"    // Dark creamy for dark mode
+  }
 };
 
 // ============================================

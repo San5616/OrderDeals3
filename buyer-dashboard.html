@@ -10,7 +10,7 @@
   <style>
     :root {
       --bg: #f5f7fa; --surface: #ffffff; --surface2: #f0f2f5; --surface3: #e8eaed;
-      --accent: #1a56db; --accent-hover: #1e40af; --accent-glow: rgba(26,86,219,0.1);
+      --accent: #d4a574; --accent-hover: #c4956a; --accent-glow: rgba(212,165,116,0.15);
       --green: #16a34a; --yellow: #d97706; --red: #dc2626; --purple: #7c3aed;
       --pink: #db2777; --cyan: #0891b2; --orange: #ea580c;
       --text: #1e293b; --text2: #475569; --text3: #94a3b8;
@@ -18,7 +18,7 @@
     }
     [data-theme="dark"] {
       --bg: #0f172a; --surface: #1e293b; --surface2: #273549; --surface3: #334155;
-      --accent: #60a5fa; --accent-hover: #3b82f6; --accent-glow: rgba(96,165,250,0.1);
+      --accent: #e8c9a0; --accent-hover: #d4a574; --accent-glow: rgba(232,201,160,0.15);
       --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
       --border: #334155; --border2: #475569; --card-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
@@ -184,7 +184,6 @@
         <div class="filter-search">
           <select id="filterType">
             <option value="id">Order ID</option>
-            <option value="orderno">Order No</option>
             <option value="product">Product</option>
             <option value="platform">Platform</option>
           </select>
@@ -211,7 +210,7 @@
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--card-shadow);">
           <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;font-size:11px;">
-              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Platform</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Payment</th></tr></thead>
+              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Account</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Platform</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Got</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Payment</th></tr></thead>
               <tbody id="buyerTableBody"></tbody>
             </table>
           </div>
@@ -466,17 +465,20 @@
 
     function renderBuyerTable(orders) {
       const tbody = document.getElementById('buyerTableBody');
-      if (!orders.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px;">No orders found</td></tr>'; return; }
+      if (!orders.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:20px;">No orders found</td></tr>'; return; }
       tbody.innerHTML = orders.map((o, idx) => {
         const payColor = o.PaymentStatus === 'Paid' ? 'var(--green)' : 'var(--yellow)';
-        const payText = o.PaymentStatus === 'Paid' ? '✅ Paid' : '⏳ Pending';
+        const payText = o.PaymentStatus === 'Paid' ? '✅ Paid' : ' Pending';
+        const actualGot = o.BuyerActualGot || 0;
         return `<tr style="border-bottom:1px solid var(--border);">
           <td style="padding:7px 8px;font-weight:600;color:var(--accent);">#${o.OrderNo || ''}</td>
           <td style="padding:7px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;">${o.PlatformOrderID || '—'}</td>
           <td style="padding:7px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${o.ProductName || ''}">${(o.ProductName || '').substring(0, 25)}${(o.ProductName || '').length > 25 ? '...' : ''}</td>
+          <td style="padding:7px 8px;color:var(--cyan);font-weight:500;">${o.AccountName || '—'}</td>
           <td style="padding:7px 8px;">${o.OrderedPlatform || '—'}</td>
           <td style="padding:7px 8px;font-weight:600;">₹${o.PricePaid || 0}</td>
           <td style="padding:7px 8px;font-weight:600;color:var(--red);">₹${o.BuyerLess || o.Less || 0}</td>
+          <td style="padding:7px 8px;font-weight:600;color:var(--green);">${actualGot}</td>
           <td style="padding:7px 8px;">${statusBadge(o.OrderStatus || 'Order Placed')}</td>
           <td style="padding:7px 8px;color:${payColor};font-weight:600;">${payText}</td>
         </tr>`;
@@ -491,7 +493,6 @@
         if (search) {
           let match = false;
           if (filterType === 'id') match = String(o.PlatformOrderID || o.OrderNo || '').toLowerCase().includes(search);
-          else if (filterType === 'orderno') match = String(o.OrderNo || '').toLowerCase().includes(search);
           else if (filterType === 'product') match = (o.ProductName || '').toLowerCase().includes(search);
           else if (filterType === 'platform') match = (o.OrderedPlatform || '').toLowerCase().includes(search);
           if (!match) return false;
@@ -646,5 +647,5 @@ Platform ID: ${o.PlatformOrderID}`;
     document.getElementById('newDate').valueAsDate = new Date();
     loadData();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1fdfd8af9a57a07',t:'MTc4NDg0NDM2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a209a667ec317a00',t:'MTc4NDk2NjYyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

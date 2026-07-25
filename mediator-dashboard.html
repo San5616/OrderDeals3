@@ -10,14 +10,14 @@
   <style>
     :root {
       --bg: #f5f7fa; --surface: #ffffff; --surface2: #f0f2f5; --surface3: #e8eaed;
-      --accent: #1d4ed8; --accent-hover: #1e40af; --accent-glow: rgba(29,78,216,0.1);
+      --accent: #d4a574; --accent-hover: #c4956a; --accent-glow: rgba(212,165,116,0.15);
       --green: #16a34a; --yellow: #d97706; --red: #dc2626; --purple: #7c3aed;
       --text: #1e293b; --text2: #475569; --text3: #94a3b8;
       --border: #e2e8f0; --border2: #cbd5e1; --radius: 12px; --radius-sm: 8px; --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     [data-theme="dark"] {
       --bg: #0f172a; --surface: #1e293b; --surface2: #273549; --surface3: #334155;
-      --accent: #60a5fa; --accent-hover: #3b82f6; --accent-glow: rgba(96,165,250,0.12);
+      --accent: #e8c9a0; --accent-hover: #d4a574; --accent-glow: rgba(232,201,160,0.15);
       --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
       --border: #334155; --border2: #475569; --card-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
@@ -156,7 +156,6 @@
             <option value="pending">Pending Refund</option>
             <option value="done">Refunded</option>
           </select>
-          <input type="text" id="medSearchInput" placeholder="Search Order No..." oninput="filterOrders()" style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;color:var(--text);font-size:12px;outline:none;">
           <button class="view-toggle" onclick="toggleView()" id="viewToggleBtn"> Table View</button>
           <button class="export-btn" onclick="exportMediatorData('csv')"> CSV</button>
           <button class="export-btn" style="background:var(--accent);" onclick="exportMediatorData('xls')"> XLS</button>
@@ -343,9 +342,7 @@
     function filterOrders() {
       const status = document.getElementById('statusFilter').value;
       const refund = document.getElementById('refundFilter').value;
-      const search = (document.getElementById('medSearchInput')?.value || '').toLowerCase();
       let filtered = allOrders;
-      if (search) filtered = filtered.filter(o => String(o.OrderNo || '').toLowerCase().includes(search));
       if (status) filtered = filtered.filter(o => o.OrderStatus === status);
       if (refund === 'pending') filtered = filtered.filter(o => o.OrderStatus !== 'Got Refund');
       if (refund === 'done') filtered = filtered.filter(o => o.OrderStatus === 'Got Refund');
