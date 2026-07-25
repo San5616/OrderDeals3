@@ -796,8 +796,27 @@
         }
       } catch(e) { console.error('Error fetching data:', e); }
 
-      const toDate = (d) => d ? new Date(d).toISOString().split('T')[0] : (new Date().toISOString().split('T')[0]);
-      const showDate = (d) => d ? formatDate(d) : 'Not set';
+      // Fix timezone issue - parse dates as local dates, not UTC
+      const toDate = (d) => {
+        if (!d) return new Date().toISOString().split('T')[0];
+        // If it's already a date string in YYYY-MM-DD format, return as-is
+        if (typeof d === 'string' && d.match(/^\d{4}-\d{2}-\d{2}$/)) return d;
+        // If it's a Date object or timestamp, convert to local date string
+        const date = new Date(d);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
+      const showDate = (d) => {
+        if (!d) return 'Not set';
+        let dateStr = toDate(d);
+        if (!dateStr) return 'Not set';
+        const parts = dateStr.split('-');
+        const date = new Date(parts[0], parts[1] - 1, parts[2]);
+        return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      };
 
       document.getElementById('modalContent').innerHTML = `
         <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">
@@ -835,8 +854,29 @@
         }
       } catch(e) { console.error('Error fetching data:', e); }
 
-      const toDate = (d) => d ? new Date(d).toISOString().split('T')[0] : '';
-      const showDate = (d) => d ? formatDate(d) : 'Not set';
+      // Fix timezone issue - parse dates as local dates, not UTC
+      const toDate = (d) => {
+        if (!d) return '';
+        // If it's already a date string in YYYY-MM-DD format, return as-is
+        if (typeof d === 'string' && d.match(/^\d{4}-\d{2}-\d{2}$/)) return d;
+        // If it's a Date object or timestamp, convert to local date string
+        const date = new Date(d);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
+      const showDate = (d) => {
+        if (!d) return 'Not set';
+        // Parse date consistently using same method as toDate
+        let dateStr = toDate(d);
+        if (!dateStr) return 'Not set';
+        // Convert YYYY-MM-DD to readable format
+        const parts = dateStr.split('-');
+        const date = new Date(parts[0], parts[1] - 1, parts[2]);
+        return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      };
 
       document.getElementById('modalContent').innerHTML = `
         <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">
@@ -1187,5 +1227,5 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
     document.getElementById('admDate').valueAsDate = new Date();
     init();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a20ba28fe8f12738',t:'MTc4NDk4NzQ0MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
