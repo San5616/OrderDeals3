@@ -8,7 +8,7 @@
 
 const CONFIG = {
   // Google Apps Script Web App URL (paste after deploying)
-  API_URL: "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE",
+  API_URL: "https://script.google.com/macros/s/AKfycbxVOmNHntcy95qiPfH69sc6CduSI72zSwSd5I-JM2RcAIkQCIXd9yhFRczzY67xup0a/exec",
 
   // Session key names (not secret — just storage keys)
   SESSION_USER: "sastadeal_user",
