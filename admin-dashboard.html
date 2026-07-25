@@ -753,20 +753,25 @@
       currentEditOrder = orderNo;
       document.getElementById('modalTitle').textContent = 'Update Status #' + orderNo;
 
+      // Show loading
+      document.getElementById('modalContent').innerHTML = '<div style="text-align:center;padding:20px;"><p>🔄 Fetching current data...</p></div>';
+      openModal();
+
       let currentData = {};
       try {
         const r = await apiCall('getOrderByPlatformID', { platformOrderId: orderNo });
         if (r.success && r.order) currentData = r.order.tracking || r.order;
-      } catch(e) {}
+      } catch(e) { console.error('Error fetching data:', e); }
 
       document.getElementById('modalContent').innerHTML = `
-        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">Edit only the fields you want to change. Unchanged fields will remain as-is.</div>
-        <div class="form-group"><label>Status</label><select id="editStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}" ${currentData.OrderStatus===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">
+          💡 Current: Status=${currentData.OrderStatus||'Not set'}, ReviewLink=${currentData.ReviewLink||'None'}, ActualGot=${currentData.ActualGot||0}, BuyerGot=${currentData.BuyerActualGot||0}
+        </div>
+        <div class="form-group"><label>Status</label><select id="editStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}" ${currentData.OrderStatus===s?'selected':''}>${s}</option>`).join('')}</select><small style="color:var(--text3);font-size:9px;">Current: ${currentData.OrderStatus||'Not set'}</small></div>
         <div class="form-group"><label>Review Link</label><input type="url" id="editReviewLink" value="${currentData.ReviewLink||''}"></div>
-        <div class="form-group"><label>Actual Got</label><input type="number" id="editActualGot" value="${currentData.ActualGot||''}"></div>
-        <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="editBuyerActualGot" value="${currentData.BuyerActualGot||''}"></div>
-        <div class="btn-row"><button class="btn btn-success" onclick="saveStatus()">Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
-      openModal();
+        <div class="form-group"><label>Actual Got</label><input type="number" id="editActualGot" value="${currentData.ActualGot||''}"><small style="color:var(--text3);font-size:9px;">Current: ${currentData.ActualGot||0}</small></div>
+        <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="editBuyerActualGot" value="${currentData.BuyerActualGot||''}"><small style="color:var(--text3);font-size:9px;">Current: ${currentData.BuyerActualGot||0}</small></div>
+        <div class="btn-row"><button class="btn btn-success" onclick="saveStatus()">💾 Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
     }
     async function saveStatus() {
       try { const r=await apiCall('updateOrderStatus',{orderNo:currentEditOrder,orderStatus:document.getElementById('editStatus').value,additionalData:{ReviewLink:document.getElementById('editReviewLink').value,ActualGot:document.getElementById('editActualGot').value,BuyerActualGot:document.getElementById('editBuyerActualGot').value}}); if(r.success){showToast('Status updated!','success');closeModal();loadAllOrders();loadStats();} else showToast(r.error||'Failed','error'); } catch(e){showToast('Error','error');}
@@ -777,23 +782,30 @@
       currentEditOrder = orderNo;
       document.getElementById('modalTitle').textContent = 'Update Payment #' + orderNo;
 
+      // Show loading
+      document.getElementById('modalContent').innerHTML = '<div style="text-align:center;padding:20px;"><p>🔄 Fetching current data...</p></div>';
+      openModal();
+
       let currentData = {};
       try {
         const r = await apiCall('getOrderByPlatformID', { platformOrderId: orderNo });
         if (r.success && r.order) currentData = r.order.tracking || r.order;
-      } catch(e) {}
+      } catch(e) { console.error('Error fetching data:', e); }
 
       const toDate = (d) => d ? new Date(d).toISOString().split('T')[0] : (new Date().toISOString().split('T')[0]);
+      const showDate = (d) => d ? formatDate(d) : 'Not set';
 
       document.getElementById('modalContent').innerHTML = `
-        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">Edit only the fields you want to change. Unchanged fields will remain as-is.</div>
-        <div class="form-group"><label>Status</label><select id="editPayStatus"><option value="Pending payment" ${currentData.PaymentStatus==='Pending payment'?'selected':''}>Pending</option><option value="Paid" ${currentData.PaymentStatus==='Paid'?'selected':''}>Paid</option></select></div>
-        <div class="form-group"><label>Method</label><select id="editPayMethod"><option ${currentData.PaymentMethod==='UPI'?'selected':''}>UPI</option><option ${currentData.PaymentMethod==='Bank Transfer'?'selected':''}>Bank Transfer</option><option ${currentData.PaymentMethod==='Paytm'?'selected':''}>Paytm</option><option ${currentData.PaymentMethod==='PhonePe'?'selected':''}>PhonePe</option><option ${currentData.PaymentMethod==='Google Pay'?'selected':''}>Google Pay</option><option ${currentData.PaymentMethod==='Cash'?'selected':''}>Cash</option></select></div>
-        <div class="form-group"><label>Date</label><input type="date" id="editPayDate" value="${toDate(currentData.PaymentDate)}"></div>
-        <div class="form-group"><label>Actual Got</label><input type="number" id="editPayActualGot" value="${currentData.ActualGot||''}"></div>
-        <div class="form-group"><label>Buyer Got</label><input type="number" id="editPayBuyerGot" value="${currentData.BuyerActualGot||''}"></div>
+        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">
+          💡 Current: Status=${currentData.PaymentStatus||'Not set'}, Method=${currentData.PaymentMethod||'Not set'}, Date=${showDate(currentData.PaymentDate)}, ActualGot=${currentData.ActualGot||0}, BuyerGot=${currentData.BuyerActualGot||0}
+        </div>
+        <div class="form-group"><label>Status</label><select id="editPayStatus"><option value="Pending payment" ${currentData.PaymentStatus==='Pending payment'?'selected':''}>Pending</option><option value="Paid" ${currentData.PaymentStatus==='Paid'?'selected':''}>Paid</option></select><small style="color:var(--text3);font-size:9px;">Current: ${currentData.PaymentStatus||'Not set'}</small></div>
+        <div class="form-group"><label>Method</label><select id="editPayMethod"><option ${currentData.PaymentMethod==='UPI'?'selected':''}>UPI</option><option ${currentData.PaymentMethod==='Bank Transfer'?'selected':''}>Bank Transfer</option><option ${currentData.PaymentMethod==='Paytm'?'selected':''}>Paytm</option><option ${currentData.PaymentMethod==='PhonePe'?'selected':''}>PhonePe</option><option ${currentData.PaymentMethod==='Google Pay'?'selected':''}>Google Pay</option><option ${currentData.PaymentMethod==='Cash'?'selected':''}>Cash</option></select><small style="color:var(--text3);font-size:9px;">Current: ${currentData.PaymentMethod||'Not set'}</small></div>
+        <div class="form-group"><label>Date</label><input type="date" id="editPayDate" value="${toDate(currentData.PaymentDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.PaymentDate)}</small></div>
+        <div class="form-group"><label>Actual Got</label><input type="number" id="editPayActualGot" value="${currentData.ActualGot||''}"><small style="color:var(--text3);font-size:9px;">Current: ${currentData.ActualGot||0}</small></div>
+        <div class="form-group"><label>Buyer Got</label><input type="number" id="editPayBuyerGot" value="${currentData.BuyerActualGot||''}"><small style="color:var(--text3);font-size:9px;">Current: ${currentData.BuyerActualGot||0}</small></div>
         <div class="form-group"><label>Notes</label><textarea id="editPayNotes">${currentData.Notes||''}</textarea></div>
-        <div class="btn-row"><button class="btn btn-success" onclick="savePayment()">Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
+        <div class="btn-row"><button class="btn btn-success" onclick="savePayment()">💾 Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
       openModal();
     }
     async function savePayment() {
@@ -805,6 +817,10 @@
       currentEditOrder = orderNo;
       document.getElementById('modalTitle').textContent = 'Update Tracking #' + orderNo;
 
+      // Show loading
+      document.getElementById('modalContent').innerHTML = '<div style="text-align:center;padding:20px;"><p>🔄 Fetching current data...</p></div>';
+      openModal();
+
       // Fetch current order data
       let currentData = {};
       try {
@@ -812,28 +828,32 @@
         if (r.success && r.order) {
           currentData = r.order.tracking || r.order;
         }
-      } catch(e) {}
+      } catch(e) { console.error('Error fetching data:', e); }
 
       const toDate = (d) => d ? new Date(d).toISOString().split('T')[0] : '';
+      const showDate = (d) => d ? formatDate(d) : 'Not set';
 
       document.getElementById('modalContent').innerHTML = `
-        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">Edit only the fields you want to change. Unchanged fields will remain as-is.</div>
-        <div class="form-group"><label>Order Status</label><select id="trkStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}" ${currentData.OrderStatus===s?'selected':''}>${s}</option>`).join('')}</select></div>
-        <div class="form-group"><label>Order Date</label><input type="date" id="trkOrderDate" value="${toDate(currentData.OrderDate)}"></div>
-        <div class="form-group"><label>Delivery Date</label><input type="date" id="trkDeliveryDate" value="${toDate(currentData.DeliveryDate)}"></div>
-        <div class="form-group"><label>Review Date</label><input type="date" id="trkReviewDate" value="${toDate(currentData.ReviewDate)}"></div>
-        <div class="form-group"><label>Review Live Date</label><input type="date" id="trkReviewLiveDate" value="${toDate(currentData.ReviewLiveDate)}"></div>
-        <div class="form-group"><label>Refund Form Date</label><input type="date" id="trkRefundFormDate" value="${toDate(currentData.RefundFormDate)}"></div>
-        <div class="form-group"><label>Refund Date</label><input type="date" id="trkRefundDate" value="${toDate(currentData.RefundDate)}"></div>
-        <div class="form-group"><label>Review Link</label><input type="url" id="trkReviewLink" value="${currentData.ReviewLink||''}"></div>
-        <div class="form-group"><label>Actual Got</label><input type="number" id="trkActualGot" value="${currentData.ActualGot||''}"></div>
-        <div class="form-group"><label>Buyer To Get</label><input type="number" id="trkBuyerToGet" value="${currentData.BuyerToget||''}"></div>
-        <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="trkBuyerActualGot" value="${currentData.BuyerActualGot||''}"></div>
-        <div class="form-group"><label>Payment Status</label><select id="trkPayStatus"><option value="Pending payment" ${currentData.PaymentStatus==='Pending payment'?'selected':''}>Pending</option><option value="Paid" ${currentData.PaymentStatus==='Paid'?'selected':''}>Paid</option></select></div>
-        <div class="form-group"><label>Payment Method</label><select id="trkPayMethod"><option ${currentData.PaymentMethod==='UPI'?'selected':''}>UPI</option><option ${currentData.PaymentMethod==='Bank Transfer'?'selected':''}>Bank Transfer</option><option ${currentData.PaymentMethod==='Paytm'?'selected':''}>Paytm</option><option ${currentData.PaymentMethod==='PhonePe'?'selected':''}>PhonePe</option><option ${currentData.PaymentMethod==='Google Pay'?'selected':''}>Google Pay</option><option ${currentData.PaymentMethod==='Cash'?'selected':''}>Cash</option></select></div>
-        <div class="form-group"><label>Payment Date</label><input type="date" id="trkPayDate" value="${toDate(currentData.PaymentDate)}"></div>
-        <div class="btn-row"><button class="btn btn-success" onclick="saveTracking()">Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
-      openModal();
+        <div style="background:var(--accent-glow);padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:11px;color:var(--accent);">
+          💡 Current values shown below each field. Edit only what you want to change.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="form-group"><label>Order Status</label><select id="trkStatus">${['Order Placed','Product Received','Reviewed','Review Live','Refund form filled','Got Refund'].map(s=>`<option value="${s}" ${currentData.OrderStatus===s?'selected':''}>${s}</option>`).join('')}</select><small style="color:var(--text3);font-size:9px;">Current: ${currentData.OrderStatus||'Not set'}</small></div>
+          <div class="form-group"><label>Order Date</label><input type="date" id="trkOrderDate" value="${toDate(currentData.OrderDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.OrderDate)}</small></div>
+          <div class="form-group"><label>Delivery Date</label><input type="date" id="trkDeliveryDate" value="${toDate(currentData.DeliveryDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.DeliveryDate)}</small></div>
+          <div class="form-group"><label>Review Date</label><input type="date" id="trkReviewDate" value="${toDate(currentData.ReviewDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.ReviewDate)}</small></div>
+          <div class="form-group"><label>Review Live Date</label><input type="date" id="trkReviewLiveDate" value="${toDate(currentData.ReviewLiveDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.ReviewLiveDate)}</small></div>
+          <div class="form-group"><label>Refund Form Date</label><input type="date" id="trkRefundFormDate" value="${toDate(currentData.RefundFormDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.RefundFormDate)}</small></div>
+          <div class="form-group"><label>Refund Date</label><input type="date" id="trkRefundDate" value="${toDate(currentData.RefundDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.RefundDate)}</small></div>
+          <div class="form-group"><label>Review Link</label><input type="url" id="trkReviewLink" value="${currentData.ReviewLink||''}"></div>
+          <div class="form-group"><label>Actual Got</label><input type="number" id="trkActualGot" value="${currentData.ActualGot||''}"><small style="color:var(--text3);font-size:9px;">Current: ${currentData.ActualGot||0}</small></div>
+          <div class="form-group"><label>Buyer To Get</label><input type="number" id="trkBuyerToGet" value="${currentData.BuyerToget||''}"><small style="color:var(--text3);font-size:9px;">Current: ${currentData.BuyerToget||0}</small></div>
+          <div class="form-group"><label>Buyer Actual Got</label><input type="number" id="trkBuyerActualGot" value="${currentData.BuyerActualGot||''}"><small style="color:var(--text3);font-size:9px;">Current: ${currentData.BuyerActualGot||0}</small></div>
+          <div class="form-group"><label>Payment Status</label><select id="trkPayStatus"><option value="Pending payment" ${currentData.PaymentStatus==='Pending payment'?'selected':''}>Pending</option><option value="Paid" ${currentData.PaymentStatus==='Paid'?'selected':''}>Paid</option></select><small style="color:var(--text3);font-size:9px;">Current: ${currentData.PaymentStatus||'Not set'}</small></div>
+          <div class="form-group"><label>Payment Method</label><select id="trkPayMethod"><option ${currentData.PaymentMethod==='UPI'?'selected':''}>UPI</option><option ${currentData.PaymentMethod==='Bank Transfer'?'selected':''}>Bank Transfer</option><option ${currentData.PaymentMethod==='Paytm'?'selected':''}>Paytm</option><option ${currentData.PaymentMethod==='PhonePe'?'selected':''}>PhonePe</option><option ${currentData.PaymentMethod==='Google Pay'?'selected':''}>Google Pay</option><option ${currentData.PaymentMethod==='Cash'?'selected':''}>Cash</option></select></div>
+          <div class="form-group"><label>Payment Date</label><input type="date" id="trkPayDate" value="${toDate(currentData.PaymentDate)}"><small style="color:var(--text3);font-size:9px;">Current: ${showDate(currentData.PaymentDate)}</small></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-success" onclick="saveTracking()">💾 Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>`;
     }
     async function saveTracking() {
       try {
@@ -1162,5 +1182,5 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
     document.getElementById('admDate').valueAsDate = new Date();
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a209a6e20fe47a00',t:'MTc4NDk2NjY0Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a209dbbcb9f6a6dc',t:'MTc4NDk2ODgxMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
