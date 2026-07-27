@@ -189,13 +189,13 @@
   <div class="main-content">
     <div class="page-header">
       <h1>📦 Track Your Order</h1>
-      <p>Enter your Platform Order ID to see real-time status</p>
+      <p>Enter your Platform Order ID to see real-time status<br><small style="color:var(--text3);font-size:12px;">Order No search is not available. Use Platform Order ID only.</small></p>
     </div>
 
     <div class="track-search">
       <h3>🔍 Search Order</h3>
       <div class="track-input-group">
-        <input type="text" id="trackInput" placeholder="Enter Platform Order ID or Order No...">
+        <input type="text" id="trackInput" placeholder="Enter Platform Order ID (e.g., 405-4497409-1431556)...">
         <button onclick="searchOrder()">Track</button>
       </div>
     </div>
@@ -221,17 +221,18 @@
 
     async function searchOrder() {
       const orderId = document.getElementById('trackInput').value.trim();
-      if (!orderId) { showToast('Please enter an Order ID', 'warning'); return; }
+      if (!orderId) { showToast('Please enter a Platform Order ID', 'warning'); return; }
 
       const area = document.getElementById('resultArea');
       area.innerHTML = `<div class="loading"><div class="spinner"></div><p>Searching for order...</p></div>`;
 
       try {
+        // Only search by PlatformOrderID, not OrderNo
         const result = await apiCall('trackOrder', { platformOrderId: orderId });
         if (result.success) {
           renderTracking(result.tracking);
         } else {
-          area.innerHTML = `<div class="error-box"><p>❌ ${result.error || 'Order not found'}</p></div>`;
+          area.innerHTML = `<div class="error-box"><p>❌ ${result.error || 'Order not found. Please enter a valid Platform Order ID (e.g., 405-4497409-1431556)'}</p></div>`;
         }
       } catch (e) {
         area.innerHTML = `<div class="error-box"><p>❌ Network error. Please try again.</p></div>`;
@@ -396,5 +397,5 @@
     }
     checkSession();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e960cacd047a00',t:'MTc4NDYyODIzMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d257d59425a04',t:'MTc4NTE3MTA2MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

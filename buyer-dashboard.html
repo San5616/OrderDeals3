@@ -210,7 +210,7 @@
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--card-shadow);">
           <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;font-size:11px;">
-              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Account</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Platform</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Got</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Payment</th></tr></thead>
+              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('#')">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('PlatformOrderID')">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('ProductName')">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('AccountName')">Account</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('OrderedPlatform')">Platform</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('PricePaid')">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('BuyerLess')">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('BuyerActualGot')">Got</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('OrderStatus')">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortBuyerTable('PaymentStatus')">Payment</th></tr></thead>
               <tbody id="buyerTableBody"></tbody>
             </table>
           </div>
@@ -463,6 +463,41 @@
       if (buyerViewMode === 'table') renderBuyerTable(filteredOrders);
     }
 
+
+    // Sorting state
+    let buyerSortColumn = '';
+    let buyerSortDirection = 'asc';
+    
+    function sortBuyerTable(column) {
+      if (buyerSortColumn === column) {
+        buyerSortDirection = buyerSortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        buyerSortColumn = column;
+        buyerSortDirection = 'asc';
+      }
+      
+      filteredOrders.sort((a, b) => {
+        let valA = a[column] || '';
+        let valB = b[column] || '';
+        
+        // Handle numeric values
+        if (column === 'PricePaid' || column === 'BuyerLess' || column === 'BuyerActualGot' || column === 'OrderNo') {
+          valA = parseFloat(valA) || 0;
+          valB = parseFloat(valB) || 0;
+        } else {
+          valA = String(valA).toLowerCase();
+          valB = String(valB).toLowerCase();
+        }
+        
+        if (valA < valB) return buyerSortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return buyerSortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      
+      renderBuyerTable(filteredOrders);
+      showToast(`Sorted by ${column} (${buyerSortDirection})`, 'info');
+    }
+
     function renderBuyerTable(orders) {
       const tbody = document.getElementById('buyerTableBody');
       if (!orders.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:20px;">No orders found</td></tr>'; return; }
@@ -647,5 +682,5 @@ Platform ID: ${o.PlatformOrderID}`;
     document.getElementById('newDate').valueAsDate = new Date();
     loadData();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a209a667ec317a00',t:'MTc4NDk2NjYyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

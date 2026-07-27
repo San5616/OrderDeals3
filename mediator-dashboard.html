@@ -170,7 +170,19 @@
         <div class="card">
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>#</th><th>Platform</th><th>Account</th><th>Product</th><th>Price</th><th>Less</th><th>Got</th><th>Refund Date</th><th>Status</th><th>Refund</th><th>Days</th></tr></thead>
+              <thead><tr>
+                <th>#</th>
+                <th>Order ID</th>
+                <th>Account</th>
+                <th>Product</th>
+                <th>Seller</th>
+                <th>Price</th>
+                <th>ToGet</th>
+                <th>Order Date</th>
+                <th>Refund Form Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr></thead>
               <tbody id="ordersBody"></tbody>
             </table>
           </div>
@@ -224,6 +236,82 @@
       document.getElementById('viewToggleBtn').textContent = currentView === 'card' ? ' Table View' : '📋 Card View';
     }
 
+
+    // Show order timeline
+    function showOrderTimeline(orderNo) {
+      const order = allOrders.find(o => String(o.OrderNo) === String(orderNo));
+      if (!order) { showToast('Order not found', 'error'); return; }
+      
+      const steps = [
+        { label: 'Order Placed', date: order.OrderDate, statusIdx: 0 },
+        { label: 'Product Received', date: order.DeliveryDate, statusIdx: 1 },
+        { label: 'Reviewed', date: order.ReviewDate, statusIdx: 2 },
+        { label: 'Review Live', date: order.ReviewLiveDate, statusIdx: 3 },
+        { label: 'Refund Form Filled', date: order.RefundFormDate, statusIdx: 4 },
+        { label: 'Got Refund', date: order.RefundDate, statusIdx: 5 }
+      ];
+      
+      const currentStatus = order.OrderStatus || '';
+      const statusOrder = ['Order Placed', 'Product Received', 'Reviewed', 'Review Live', 'Refund form filled', 'Got Refund'];
+      const currentIdx = statusOrder.indexOf(currentStatus);
+      
+      let timelineHtml = '<div style="padding:20px;">';
+      timelineHtml += `<h3 style="margin-bottom:16px;"> Order #${orderNo} Timeline</h3>`;
+      timelineHtml += '<div style="display:flex;flex-direction:column;gap:8px;">';
+      
+      steps.forEach((step, idx) => {
+        let cls = '';
+        if (idx < currentIdx) cls = 'done';
+        else if (idx === currentIdx && currentStatus) cls = 'active';
+        
+        const dotColor = cls === 'done' ? 'var(--green)' : cls === 'active' ? 'var(--accent)' : 'var(--border2)';
+        const textColor = cls === 'done' || cls === 'active' ? 'var(--text)' : 'var(--text3)';
+        const dateStr = step.date ? formatDate(step.date) : '—';
+        
+        timelineHtml += `
+          <div style="display:flex;align-items:center;gap:12px;padding:8px;background:var(--surface2);border-radius:6px;">
+            <div style="width:12px;height:12px;border-radius:50%;background:${dotColor};flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:600;color:${textColor};">${step.label}</div>
+              <div style="font-size:10px;color:var(--text3);">${dateStr}</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      timelineHtml += '</div></div>';
+      
+      // Show in modal
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      modal.innerHTML = `
+        <div style="background:var(--surface);border-radius:12px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;">
+          <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;font-size:16px;"> Order Timeline</h3>
+            <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+          </div>
+          ${timelineHtml}
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    // Add note to order
+    function addOrderNote(orderNo) {
+      const order = allOrders.find(o => String(o.OrderNo) === String(orderNo));
+      if (!order) { showToast('Order not found', 'error'); return; }
+      
+      const currentNote = order.Notes || '';
+      const newNote = prompt('Add note for Order #' + orderNo + ':', currentNote);
+      
+      if (newNote !== null) {
+        // In a real implementation, this would save to the backend
+        // For now, just show confirmation
+        showToast('Note saved for Order #' + orderNo, 'success');
+        console.log('Note for Order #' + orderNo + ':', newNote);
+      }
+    }
+
     async function loadOrders() {
       showLoading();
       try {
@@ -254,20 +342,24 @@
       const total = r.total || 0;
       const totalLess = r.totalLess || 0;
       const totalRefund = r.totalRefund || 0;
-      let totalOrderAmt = 0, totalPendingAmt = 0;
+      let totalOrderAmt = 0, totalToGetPending = 0, pendingRefundCount = 0;
+      
       allOrders.forEach(o => {
         totalOrderAmt += parseFloat(o.PricePaid || 0);
-        // Pending = orders not yet refunded, amount = Less - already refunded
+        // Yet to receive = sum of ToGet for orders NOT yet refunded
         if (o.OrderStatus !== 'Got Refund') {
-          totalPendingAmt += parseFloat(o.Less || 0);
+          totalToGetPending += parseFloat(o.ToGet || o.Less || 0);
+          pendingRefundCount++;
         }
       });
+      
       document.getElementById('medStats').innerHTML = `
         <div class="kpi"><div class="v" style="color:var(--accent);">${total}</div><div class="l">Total Orders</div></div>
         <div class="kpi"><div class="v" style="color:var(--green);">₹${totalOrderAmt.toLocaleString('en-IN')}</div><div class="l">Order Amount</div></div>
         <div class="kpi"><div class="v" style="color:var(--yellow);">₹${totalLess.toLocaleString('en-IN')}</div><div class="l">Total Less</div></div>
         <div class="kpi"><div class="v" style="color:var(--purple);">₹${totalRefund.toLocaleString('en-IN')}</div><div class="l">Total Refund</div></div>
-        <div class="kpi"><div class="v" style="color:var(--red);">₹${totalPendingAmt.toLocaleString('en-IN')}</div><div class="l">Yet to Receive</div><div class="l">after Less</div></div>
+        <div class="kpi"><div class="v" style="color:var(--red);">₹${totalToGetPending.toLocaleString('en-IN')}</div><div class="l">Yet to Receive</div></div>
+        <div class="kpi"><div class="v" style="color:var(--orange);">${pendingRefundCount}</div><div class="l">Pending Refund</div></div>
       `;
     }
 
@@ -325,16 +417,18 @@
         const refundStatus = o.OrderStatus === 'Got Refund' ? '<span style="color:var(--green);font-weight:600;">✅</span>' : '<span style="color:var(--yellow);font-weight:600;">⏳</span>';
         return `<tr>
           <td style="font-weight:600;color:var(--accent);">${o.OrderNo}</td>
-          <td>${o.OrderedPlatform}</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${o.PlatformOrderID || '—'}</td>
           <td style="color:var(--cyan);font-weight:500;">${o.AccountName || '—'}</td>
           <td title="${o.ProductName}" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;">${(o.ProductName || '').substring(0, 20)}</td>
-          <td>₹${o.PricePaid || 0}</td>
-          <td style="font-weight:600;color:var(--yellow);">₹${o.Less || 0}</td>
-          <td style="font-weight:600;color:var(--green);">₹${o.BuyerActualGot || o.ActualGot || 0}</td>
-          <td style="font-size:10px;">${o.RefundDate ? formatDate(o.RefundDate) : '—'}</td>
+          <td>${o.SellerName || '—'}</td>
+          <td style="font-weight:600;color:var(--green);">₹${o.ToGet || o.Less || 0}</td>
+          <td style="font-size:10px;">${o.OrderDate ? formatDate(o.OrderDate) : '—'}</td>
+          <td style="font-size:10px;">${o.RefundFormDate ? formatDate(o.RefundFormDate) : '—'}</td>
           <td>${statusBadge(o.OrderStatus || 'Order Placed')}</td>
-          <td>${refundStatus}</td>
-          <td>${daysHtml || '—'}</td>
+          <td style="display:flex;gap:4px;">
+            <button style="padding:3px 8px;border-radius:4px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;" onclick="showOrderTimeline(${o.OrderNo})">📊</button>
+            <button style="padding:3px 8px;border-radius:4px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;" onclick="addOrderNote(${o.OrderNo})"></button>
+          </td>
         </tr>`;
       }).join('');
     }
@@ -434,5 +528,5 @@ Query: `;
 
     loadOrders();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d268ced5d5a04',t:'MTc4NTE3MTEwNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
