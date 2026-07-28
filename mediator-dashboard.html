@@ -316,16 +316,25 @@
 
     async function loadOrders() {
       showLoading();
+      console.log('Loading orders for mediator:', session.name);
       try {
         const r = await apiCall('getMediatorOrders', { mediatorName: session.name });
+        console.log('API Response:', r);
         if (r.success) {
           allOrders = (r.orders || []).sort((a, b) => (b.OrderNo || 0) - (a.OrderNo || 0));
           filteredOrders = [...allOrders];
+          console.log('Orders loaded:', allOrders.length);
           renderStats(r);
           renderOrders(allOrders);
           populateQueryOrders(allOrders);
+        } else {
+          console.error('Failed to load orders:', r);
+          showToast('Failed to load orders', 'error');
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error loading orders:', e);
+        showToast('Error loading orders: ' + e.message, 'error');
+      }
       // Load highlights
       try {
         const hl = await apiCall('getHighlights', { role: 'mediator' });
