@@ -171,15 +171,17 @@
           <div class="table-wrapper">
             <table>
               <thead><tr>
-                <th>#</th>
+                <th>Order No</th>
                 <th>Order ID</th>
                 <th>Account</th>
                 <th>Product</th>
                 <th>Seller</th>
-                <th>Price</th>
-                <th>ToGet</th>
                 <th>Order Date</th>
                 <th>Refund Form Date</th>
+                <th>Price</th>
+                <th>Less</th>
+                <th>ToGet</th>
+                <th>Got</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr></thead>
@@ -342,7 +344,7 @@
       const total = r.total || 0;
       const totalLess = r.totalLess || 0;
       const totalRefund = r.totalRefund || 0;
-      let totalOrderAmt = 0, totalToGetPending = 0, pendingRefundCount = 0;
+      let totalOrderAmt = 0, totalToGetPending = 0, pendingRefundCount = 0, gotRefundCount = 0;
       
       allOrders.forEach(o => {
         totalOrderAmt += parseFloat(o.PricePaid || 0);
@@ -350,16 +352,19 @@
         if (o.OrderStatus !== 'Got Refund') {
           totalToGetPending += parseFloat(o.ToGet || o.Less || 0);
           pendingRefundCount++;
+        } else {
+          gotRefundCount++;
         }
       });
       
       document.getElementById('medStats').innerHTML = `
         <div class="kpi"><div class="v" style="color:var(--accent);">${total}</div><div class="l">Total Orders</div></div>
-        <div class="kpi"><div class="v" style="color:var(--green);">₹${totalOrderAmt.toLocaleString('en-IN')}</div><div class="l">Order Amount</div></div>
+        <div class="kpi"><div class="v" style="color:var(--green);">${totalOrderAmt.toLocaleString('en-IN')}</div><div class="l">Order Amount</div></div>
         <div class="kpi"><div class="v" style="color:var(--yellow);">₹${totalLess.toLocaleString('en-IN')}</div><div class="l">Total Less</div></div>
         <div class="kpi"><div class="v" style="color:var(--purple);">₹${totalRefund.toLocaleString('en-IN')}</div><div class="l">Total Refund</div></div>
-        <div class="kpi"><div class="v" style="color:var(--red);">₹${totalToGetPending.toLocaleString('en-IN')}</div><div class="l">Yet to Receive</div></div>
+        <div class="kpi"><div class="v" style="color:var(--red);">${totalToGetPending.toLocaleString('en-IN')}</div><div class="l">Yet to Receive</div></div>
         <div class="kpi"><div class="v" style="color:var(--orange);">${pendingRefundCount}</div><div class="l">Pending Refund</div></div>
+        <div class="kpi"><div class="v" style="color:var(--green);">${gotRefundCount}</div><div class="l">Got Refund</div></div>
       `;
     }
 
@@ -405,6 +410,10 @@
               <div class="info-cell"><label>Platform ID</label><span style="font-family:'JetBrains Mono',monospace;font-size:10px;">${o.PlatformOrderID || '—'}</span></div>
               <div class="info-cell"><label>Account</label><span>${o.AccountName || '—'}</span></div>
             </div>
+            <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;">
+              <button style="padding:5px 12px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;" onclick="showOrderTimeline(${o.OrderNo})">📊 View Timeline</button>
+              <button style="padding:5px 12px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:var(--green);color:white;" onclick="addOrderNote(${o.OrderNo})"></button>
+            </div>
           </div>
         `;
       }).join('');
@@ -421,9 +430,12 @@
           <td style="color:var(--cyan);font-weight:500;">${o.AccountName || '—'}</td>
           <td title="${o.ProductName}" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;">${(o.ProductName || '').substring(0, 20)}</td>
           <td>${o.SellerName || '—'}</td>
-          <td style="font-weight:600;color:var(--green);">₹${o.ToGet || o.Less || 0}</td>
           <td style="font-size:10px;">${o.OrderDate ? formatDate(o.OrderDate) : '—'}</td>
           <td style="font-size:10px;">${o.RefundFormDate ? formatDate(o.RefundFormDate) : '—'}</td>
+          <td style="font-weight:600;">₹${o.PricePaid || 0}</td>
+          <td style="font-weight:600;color:var(--yellow);">₹${o.Less || 0}</td>
+          <td style="font-weight:600;color:var(--green);">₹${o.ToGet || o.Less || 0}</td>
+          <td style="font-weight:600;color:var(--green);">₹${o.BuyerActualGot || o.ActualGot || 0}</td>
           <td>${statusBadge(o.OrderStatus || 'Order Placed')}</td>
           <td style="display:flex;gap:4px;">
             <button style="padding:3px 8px;border-radius:4px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;" onclick="showOrderTimeline(${o.OrderNo})">📊</button>
@@ -528,5 +540,6 @@ Query: `;
 
     loadOrders();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a21d268ced5d5a04',t:'MTc4NTE3MTEwNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
+</body>
 </html>
