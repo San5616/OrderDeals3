@@ -264,9 +264,9 @@
       </div>
       <div id="adminTableView" style="display:none;">
         <div class="card">
-          <div style="overflow-x:auto;">
+          <div style="overflow:auto;max-height:500px;">
             <table style="width:100%;border-collapse:collapse;font-size:11px;">
-              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('OrderNo')">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('PlatformOrderID')">Order ID</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('ProductName')">Product</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('AccountName')">Account</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('MediatorName')">Mediator</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('PricePaid')">Price</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('Less')">Less</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('BuyerActualGot')">Got</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('OrderStatus')">Status</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;" onclick="sortAdminTable('PaymentStatus')">Payment</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Actions</th></tr></thead>
+              <thead><tr style="background:var(--surface2);"><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;background:var(--surface2);z-index:10;" onclick="sortAdminTable('OrderNo')">#</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;background:var(--surface2);z-index:10;" onclick="sortAdminTable('SellerName')">Seller</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;background:var(--surface2);z-index:10;" onclick="sortAdminTable('OrderDate')">Order Date</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;background:var(--surface2);z-index:10;" onclick="sortAdminTable('BuyerLess')">BuyerLess</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;background:var(--surface2);z-index:10;" onclick="sortAdminTable('BuyerActualGot')">BuyerGot</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;background:var(--surface2);z-index:10;" onclick="sortAdminTable('RefundDate')">Refund Date</th><th style="padding:7px 8px;text-align:left;font-weight:600;color:var(--text2);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);">Actions</th></tr></thead>
               <tbody id="adminTableBody"></tbody>
             </table>
           </div>
@@ -423,13 +423,14 @@
       <div class="card">
         <h3>💰 Recent Payments</h3>
         <div class="filter-search" style="margin-bottom:10px;">
-          <select id="payDateType" onchange="searchPayments()" style="width:120px;">
+          <select id="payDateType" style="width:120px;">
             <option value="payment">Payment Date</option>
             <option value="refund">Refund Date</option>
           </select>
-          <input type="date" id="payDateFrom" onchange="searchPayments()">
-          <input type="date" id="payDateTo" onchange="searchPayments()">
-          <input type="number" id="payAmount" placeholder="Amount..." onchange="searchPayments()" style="width:120px;">
+          <input type="date" id="payDateFrom">
+          <input type="date" id="payDateTo">
+          <input type="number" id="payAmount" placeholder="Amount..." style="width:120px;">
+          <button onclick="searchPayments()" style="padding:7px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;">🔍 Search</button>
         </div>
         <div class="table-wrapper"><table><thead><tr><th>#</th><th>Product</th><th>Amount</th><th>Mediator</th><th>Parent ID</th><th>Pay Date</th><th>Refund Date</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
       </div>
@@ -759,15 +760,11 @@
         const actualGot = t.BuyerActualGot || t.ActualGot || 0;
         return `<tr style="border-bottom:1px solid var(--border);">
           <td style="padding:7px 8px;font-weight:600;color:var(--accent);">#${o.OrderNo||''}</td>
-          <td style="padding:7px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;">${t.PlatformOrderID||'—'}</td>
-          <td style="padding:7px 8px;max-width:150px;overflow:hidden;text-overflow:ellipsis;" title="${t.ProductName||''}">${(t.ProductName||'').substring(0,20)}${(t.ProductName||'').length>20?'...':''}</td>
-          <td style="padding:7px 8px;color:var(--cyan);font-weight:500;">${t.AccountName||o.AccountName||'—'}</td>
-          <td style="padding:7px 8px;color:var(--purple);font-weight:500;">${t.MediatorName||o.MediatorName||'—'}</td>
-          <td style="padding:7px 8px;font-weight:600;">₹${t.PricePaid||0}</td>
-          <td style="padding:7px 8px;font-weight:600;color:var(--red);">₹${o.Less||t.Less||0}</td>
-          <td style="padding:7px 8px;font-weight:600;color:var(--green);">₹${actualGot}</td>
-          <td style="padding:7px 8px;">${statusBadge(t.OrderStatus||'Order Placed')}</td>
-          <td style="padding:7px 8px;color:${payColor};font-weight:600;">${payText}</td>
+          <td style="padding:7px 8px;">${o.SellerName||t.SellerName||'—'}</td>
+          <td style="padding:7px 8px;font-size:10px;">${t.OrderDate?formatDate(t.OrderDate):'—'}</td>
+          <td style="padding:7px 8px;font-weight:600;color:var(--red);">₹${o.BuyerLess||t.BuyerLess||0}</td>
+          <td style="padding:7px 8px;font-weight:600;color:var(--green);">₹${t.BuyerActualGot||0}</td>
+          <td style="padding:7px 8px;font-size:10px;">${t.RefundDate?formatDate(t.RefundDate):'—'}</td>
           <td style="padding:7px 8px;">
             <button style="padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:var(--accent);color:white;" onclick="editTracking(${o.OrderNo||t.OrderNo})">Edit</button>
           </td>
@@ -1024,9 +1021,30 @@
     function previewAdminImage(input) { const p=document.getElementById('adminImgPreview'); if(input.files&&input.files[0]){const r=new FileReader();r.onload=e=>{p.innerHTML=`<img src="${e.target.result}" style="max-width:150px;border-radius:6px;border:1px solid var(--border);">`;};r.readAsDataURL(input.files[0]);} else p.innerHTML=''; }
 
     async function populateOrderSelects() { try { const r=await apiCall('getOrders'); if(r.success){const opts=(r.orders||[]).sort((a,b)=>(b.OrderNo||0)-(a.OrderNo||0)).map(o=>`<option value="${o.OrderNo}">#${o.OrderNo} - ${(o.ProductName||'').substring(0,30)}</option>`).join(''); document.getElementById('waOrderSelect').innerHTML='<option value="">-- Select --</option>'+opts; document.getElementById('emailOrderSelect').innerHTML='<option value="">-- Select --</option>'+opts;} } catch(e){} }
-    async function fillWAOrder() { const no=document.getElementById('waOrderSelect').value; if(!no)return; try { const r=await apiCall('getOrderByPlatformID',{platformOrderId:no}); if(r.success&&r.order){const o=r.order,t=o.tracking||{}; document.getElementById('waMessage').value=`Order #${o.OrderNo}\nDate: ${o.OrderDate}\n${o.OrderedPlatform} | ${o.AccountName}\n${o.ProductName}\nID: ${o.PlatformOrderID}\n₹${o.PricePaid} | Less: ₹${o.BuyerLess||0}\n${t.OrderStatus||'Order Placed'}\n${t.PaymentStatus||'Pending'}`;} } catch(e){} }
+    async function fillWAOrder() { 
+      const no=document.getElementById('waOrderSelect').value; 
+      if(!no)return; 
+      try { 
+        const r=await apiCall('getOrderByPlatformID',{platformOrderId:no}); 
+        if(r.success){
+          const o=r.order||{};
+          const t=r.tracking||o.tracking||{};
+          const merged={...o,...t};
+          document.getElementById('waMessage').value=`Order #${merged.OrderNo||o.OrderNo}\nDate: ${merged.OrderDate||o.OrderDate}\n${merged.OrderedPlatform||o.OrderedPlatform} | ${merged.AccountName||o.AccountName}\n${merged.ProductName||o.ProductName}\nID: ${merged.PlatformOrderID||o.PlatformOrderID}\n₹${merged.PricePaid||o.PricePaid} | BuyerLess: ₹${merged.BuyerLess||o.BuyerLess||0}\nStatus: ${merged.OrderStatus||t.OrderStatus||'Order Placed'}\nPayment: ${merged.PaymentStatus||t.PaymentStatus||'Pending'}\nRefund Date: ${merged.RefundDate||t.RefundDate||'Not set'}`;
+        }
+      } catch(e){} 
+    }
     async function sendWA() { const n=document.getElementById('waNumber').value.trim(),m=document.getElementById('waMessage').value.trim(); if(!n||!m){showToast('Fill fields','warning');return;} try { const r=await apiCall('sendWhatsApp',{to:n,message:m}); if(r.success)showToast('Sent!','success'); else showToast(r.error||'Failed','error'); } catch(e){showToast('Error','error');} }
-    async function fillEmailOrder() { const no=document.getElementById('emailOrderSelect').value; if(!no)return; try { const r=await apiCall('getOrderByPlatformID',{platformOrderId:no}); if(r.success&&r.order){const o=r.order,t=o.tracking||{}; document.getElementById('emailSubject').value='SastaDeal - Order #'+o.OrderNo; document.getElementById('emailBody').value=`Order ID: ${o.PlatformOrderID}
+    async function fillEmailOrder() { 
+      const no=document.getElementById('emailOrderSelect').value; 
+      if(!no)return; 
+      try { 
+        const r=await apiCall('getOrderByPlatformID',{platformOrderId:no}); 
+        if(r.success){
+          const o=r.order||{};
+          const t=r.tracking||o.tracking||{};
+          const merged={...o,...t};
+          document.getElementById('emailSubject').value='SastaDeal - Order #'+(merged.OrderNo||o.OrderNo); document.getElementById('emailBody').value=`Order ID: ${o.PlatformOrderID}
 Order No: #${o.OrderNo}
 Date: ${o.OrderDate}
 Platform: ${o.OrderedPlatform}
@@ -1262,6 +1280,5 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
     document.getElementById('admDate').valueAsDate = new Date();
     init();
   </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 </body>
 </html>
