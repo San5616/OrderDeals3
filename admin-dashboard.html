@@ -518,16 +518,28 @@
         const r = await apiCall('getDashboardStats');
         if (r.success) {
           const s = r.stats;
-          let totalPaidAmt = 0;
-          try { const t = await apiCall('searchOrders', { filter: 'all', paymentFilter: 'all' }); if(t.success) t.orders.forEach(o=>{ if(o.tracking&&o.tracking.PaymentStatus==='Paid') totalPaidAmt+=parseFloat(o.tracking.BuyerActualGot||o.tracking.ActualGot||0); }); } catch(e){}
+          let totalPaidAmt = 0, totalDifference = 0;
+          try { 
+            const t = await apiCall('searchOrders', { filter: 'all', paymentFilter: 'all' }); 
+            if(t.success) t.orders.forEach(o=>{ 
+              if(o.tracking&&o.tracking.PaymentStatus==='Paid') totalPaidAmt+=parseFloat(o.tracking.BuyerActualGot||o.tracking.ActualGot||0);
+              // Calculate difference for Got Refund orders
+              if(o.tracking&&o.tracking.OrderStatus==='Got Refund') {
+                const toGet = parseFloat(o.tracking.BuyerToget||o.tracking.ToGet||0);
+                const actualGot = parseFloat(o.tracking.BuyerActualGot||o.tracking.ActualGot||0);
+                if(toGet !== actualGot) totalDifference += Math.abs(toGet - actualGot);
+              }
+            }); 
+          } catch(e){}
           document.getElementById('adminStats').innerHTML = `
-            <div class="stat-box"><div class="icon-sm">📦</div><div class="val" style="color:var(--accent);">${s.totalOrders}</div><div class="lbl">Orders</div></div>
+            <div class="stat-box"><div class="icon-sm"></div><div class="val" style="color:var(--accent);">${s.totalOrders}</div><div class="lbl">Orders</div></div>
             <div class="stat-box"><div class="icon-sm">₹</div><div class="val" style="color:var(--green);">₹${s.totalSpent.toLocaleString('en-IN')}</div><div class="lbl">Price Paid</div></div>
             <div class="stat-box"><div class="icon-sm">⏳</div><div class="val" style="color:var(--yellow);">${s.pendingOrders}</div><div class="lbl">Pending</div></div>
             <div class="stat-box"><div class="icon-sm">💵</div><div class="val" style="color:var(--green);">₹${totalPaidAmt.toLocaleString('en-IN')}</div><div class="lbl">Total Paid</div></div>
             <div class="stat-box"><div class="icon-sm"></div><div class="val" style="color:var(--purple);">₹${s.totalRefund.toLocaleString('en-IN')}</div><div class="lbl">Total Refund</div></div>
             <div class="stat-box"><div class="icon-sm">🔄</div><div class="val" style="color:var(--orange);">${s.pendingPayment}</div><div class="lbl">Pay Pending</div></div>
             <div class="stat-box"><div class="icon-sm">✅</div><div class="val" style="color:var(--cyan);">${s.completedOrders}</div><div class="lbl">Refunded</div></div>
+            ${totalDifference > 0 ? `<div class="stat-box"><div class="icon-sm">⚠️</div><div class="val" style="color:var(--red);">₹${totalDifference.toLocaleString('en-IN')}</div><div class="lbl">Difference</div></div>` : ''}
             <div class="stat-box"><div class="icon-sm">📅</div><div class="val" style="color:var(--text2);">${s.todayOrders}</div><div class="lbl">Today</div></div>
           `;
         }
@@ -1289,6 +1301,5 @@ Mediator Refund Form: ${o.MediatorRefundForm||'N/A'}`;} } catch(e){} }
     document.getElementById('admDate').valueAsDate = new Date();
     init();
   </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 </body>
 </html>

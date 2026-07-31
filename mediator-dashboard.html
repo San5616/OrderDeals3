@@ -353,7 +353,7 @@
       const total = r.total || 0;
       const totalLess = r.totalLess || 0;
       const totalRefund = r.totalRefund || 0;
-      let totalOrderAmt = 0, totalToGetPending = 0, pendingRefundCount = 0, gotRefundCount = 0;
+      let totalOrderAmt = 0, totalToGetPending = 0, pendingRefundCount = 0, gotRefundCount = 0, totalDifference = 0;
       
       allOrders.forEach(o => {
         totalOrderAmt += parseFloat(o.PricePaid || 0);
@@ -363,6 +363,12 @@
           pendingRefundCount++;
         } else {
           gotRefundCount++;
+          // Calculate difference between ToGet and ActualGot for refunded orders
+          const toGet = parseFloat(o.ToGet || o.Less || 0);
+          const actualGot = parseFloat(o.BuyerActualGot || o.ActualGot || 0);
+          if (toGet !== actualGot) {
+            totalDifference += Math.abs(toGet - actualGot);
+          }
         }
       });
       
@@ -374,6 +380,7 @@
         <div class="kpi"><div class="v" style="color:var(--red);">${totalToGetPending.toLocaleString('en-IN')}</div><div class="l">Yet to Receive</div></div>
         <div class="kpi"><div class="v" style="color:var(--orange);">${pendingRefundCount}</div><div class="l">Pending Refund</div></div>
         <div class="kpi"><div class="v" style="color:var(--green);">${gotRefundCount}</div><div class="l">Got Refund</div></div>
+        ${totalDifference > 0 ? `<div class="kpi"><div class="v" style="color:var(--red);">₹${totalDifference.toLocaleString('en-IN')}</div><div class="l">Difference</div></div>` : ''}
       `;
     }
 
@@ -549,6 +556,5 @@ Query: `;
 
     loadOrders();
   </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 </body>
 </html>
